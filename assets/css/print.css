@@ -1,0 +1,44 @@
+/* Interrogation — printables. Paper-friendly: light background, ink-saving art. */
+
+@page { size: letter; margin: 0.4in; }
+:root {
+  --ink: #16121f;
+  --muted: #5d566b;
+  --line: #b9b2c6;
+  --soft: #efeaf5;
+  --pink: #d61f6f;
+  --cyan: #0a8fa6;
+  --amber: #b97800;
+  --head: "Barlow Condensed", "Arial Narrow", sans-serif;
+  --body: "Barlow", Arial, sans-serif;
+  --type: "Special Elite", "Courier New", monospace;
+  --display: "Monoton", Impact, sans-serif;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: #fff; color: var(--ink); font: 400 10.5pt/1.35 var(--body); }
+body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+.page { width: 7.7in; margin: 0 auto; }
+.page.landscape { width: 10.2in; }
+@media screen {
+  body { background: #d8d3df; padding: 24px 0; }
+  .page { background: #fff; padding: 0.4in; width: 8.5in; box-shadow: 0 6px 30px rgba(0,0,0,.25); margin-bottom: 24px; }
+  .page.landscape { width: 11in; }
+  .screen-bar { max-width: 8.5in; margin: 0 auto 14px; display: flex; gap: 10px; align-items: center; font: 600 12pt var(--head); }
+  .screen-bar a, .screen-bar button { font: inherit; text-transform: uppercase; letter-spacing: .05em; color: var(--ink); background: #fff; border: 1px solid var(--line); border-radius: 999px; padding: 8px 14px; text-decoration: none; cursor: pointer; }
+}
+@media print { .screen-bar { display: none; } .page { break-after: page; } .page:last-child { break-after: auto; } }
+
+h1, h2, h3 { font-family: var(--head); font-weight: 700; margin: 0; line-height: 1.05; letter-spacing: .02em; }
+.brandline { display: flex; align-items: baseline; gap: 12px; border-bottom: 3px solid var(--ink); padding-bottom: 6px; margin-bottom: 10px; }
+.brandline .logo { font-family: var(--display); font-size: 22pt; color: var(--ink); }
+.brandline .what { white-space: nowrap; font: 700 14pt var(--head); text-transform: uppercase; letter-spacing: .08em; color: var(--pink); }
+.brandline .spacer { flex: 1; }
+.field { font: 600 11pt var(--head); text-transform: uppercase; letter-spacing: .05em; }
+.field span { display: inline-block; width: 2.2in; border-bottom: 1px solid var(--ink); margin-left: 6px; }
+.kicker { font: 400 8.5pt var(--type); letter-spacing: .06em; text-transform: uppercase; color: var(--amber); }
+.muted { color: var(--muted); }
+.small { font-size: 8.5pt; }
+.box { border: 1.5px solid var(--ink); border-radius: 6px; padding: 8px 10px; }
+.rule { background: var(--soft); border-left: 4px solid var(--pink); padding: 6px 10px; border-radius: 0 6px 6px 0; }
+svg { display: block; }

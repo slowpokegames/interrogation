@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0b0716">
+<title>Interrogation · Printables</title>
+<link rel="stylesheet" href="../assets/css/fonts.css">
+<link rel="stylesheet" href="../assets/css/theme.css">
+<style>
+  header { text-align: center; padding: 30px 0 10px; }
+  header h1 { font-size: clamp(2rem, 9vw, 3.6rem); margin: 6px 0; }
+  .items { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; margin-top: 24px; }
+  .item { display: grid; gap: 10px; align-content: start; }
+  .item h3 { margin: 0; }
+  .item .row .btn { flex: 1; min-height: 42px; padding: 10px 14px; font-size: .95rem; }
+  .thumb { height: 120px; border-radius: 10px; background: var(--bg-2); display: grid; place-items: center; overflow: hidden; }
+  .thumb svg { height: 96px; width: auto; }
+  .thumb .strip { display: flex; gap: 6px; }
+  .thumb .strip svg { height: 96px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="kicker">Optional extras · US Letter</div>
+    <h1 class="neon">Printables</h1>
+    <p class="muted">The app is all you need. These make the table feel like a detective's desk. <a href="../index.html">Home</a> · <a href="../play.html">Play</a> · <a href="../rules.html">Rules</a></p>
+  </header>
+  <div class="items" id="items"></div>
+  <p class="muted small" style="margin-top:24px">Open any page and use your browser's Print, or grab the ready-made PDF. PDFs are rebuilt with <code>npm run pdf</code>.</p>
+</div>
+<script src="../assets/js/data.js"></script>
+<script src="../assets/js/art.js"></script>
+<script>
+(function () {
+  var A = Art;
+  var items = [
+    { file: "data-sheet", title: "Data sheet", copies: "1 per detective",
+      text: "The paper notebook: tally reports by round, weight them, and track crime lab times, press releases and hunches.",
+      thumb: '<div class="strip">' + A.outfitIcon(1) + A.studioIcon(3) + A.voiceIcon(4) + A.clock(6) + "</div>" },
+    { file: "suspects", title: "Suspect lineup", copies: "1 for the table",
+      text: "All 49 likely suspects as booking photos, one outfit per row, voices color-coded.",
+      thumb: '<div class="strip">' + A.portrait(3, { number: true }) + A.portrait(24, { number: true }) + A.portrait(45, { number: true }) + "</div>" },
+    { file: "locations", title: "Location cards", copies: "1 set",
+      text: "Six cards for the middle of the table, with die faces for picking destinations with dice.",
+      thumb: '<div class="strip">' + [1, 2, 3, 4, 5, 6].map(function (n) { return A.locationIcon(n); }).join("") + "</div>" },
+    { file: "quick-reference", title: "Quick reference", copies: "1 per detective",
+      text: "One page: turn order, locations, trials, scoring, action cards and reliability by round.",
+      thumb: '<div class="strip">' + A.locationIcon(6) + A.clock(3) + "</div>" }
+  ];
+  document.getElementById("items").innerHTML = items.map(function (it) {
+    return '<div class="panel item"><div class="thumb">' + it.thumb + "</div><div><h3>" + it.title + '</h3><div class="kicker">' + it.copies + "</div></div>" +
+      '<p class="muted" style="margin:0">' + it.text + '</p><div class="row"><a class="btn" href="' + it.file + '.html">Open</a>' +
+      '<a class="btn primary" href="pdf/' + it.file + '.pdf" download>PDF</a></div></div>';
+  }).join("");
+})();
+</script>
+</body>
+</html>

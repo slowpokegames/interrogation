@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Interrogation · Quick Reference</title>
+<link rel="stylesheet" href="../assets/css/fonts.css">
+<link rel="stylesheet" href="../assets/css/print.css">
+<style>
+  .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  h3 { font-size: 12.5pt; text-transform: uppercase; letter-spacing: .07em; border-bottom: 2px solid var(--ink); padding-bottom: 2px; margin: 10px 0 6px; }
+  ol, ul { margin: 0; padding-left: 18px; }
+  li { margin-bottom: 3px; }
+  table { width: 100%; border-collapse: collapse; font-size: 9.5pt; }
+  td, th { border-bottom: 1px solid var(--line); padding: 3px 4px; text-align: left; vertical-align: top; }
+  th { font: 700 8.5pt var(--head); text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+  td.n { text-align: right; white-space: nowrap; font-weight: 600; }
+  .loc { display: grid; grid-template-columns: 26px 1fr; gap: 6px; align-items: start; margin-bottom: 4px; font-size: 9.5pt; }
+  .loc svg { width: 26px; height: 26px; }
+  .rel { display: grid; grid-template-columns: repeat(9, 1fr); gap: 3px; text-align: center; }
+  .rel div { border: 1px solid var(--line); border-radius: 4px; padding: 3px 0; font: 600 8.5pt var(--head); }
+  .rel b { display: block; font-size: 11pt; color: var(--pink); }
+  .card { margin-bottom: 4px; font-size: 9.5pt; }
+</style>
+</head>
+<body>
+<div class="screen-bar"><a href="index.html">← Printables</a><button onclick="print()">Print</button></div>
+<div class="page">
+  <div class="brandline"><span class="logo">Interrogation</span><span class="what">Quick Reference</span></div>
+  <div class="cols">
+    <div>
+      <h3>Each turn</h3>
+      <ol>
+        <li><b>Donut calls:</b> from the Lead Detective, clockwise, anyone may announce the Donut Shop.</li>
+        <li><b>Secret destinations:</b> everyone else picks 1, 2, 3, 4 or 6 in secret, then all reveal.</li>
+        <li><b>Action cards:</b> one per detective, after destinations are revealed.</li>
+        <li><b>Resolve</b> locations in order, 1 through 6.</li>
+      </ol>
+      <p class="small" style="margin:4px 0 0"><b>Turns per round:</b> 3 players: 6 · 4 players: 4 · 5–6 players: 3. The Lead Detective passes left each round.</p>
+
+      <h3>Locations</h3>
+      <div id="locs"></div>
+
+      <h3>Witness reliability</h3>
+      <div class="rel" id="rel"></div>
+      <p class="small muted" style="margin:4px 0 0">Crime lab: exact 17% · within 5 min 44% · never 30 min off. Crime time is 5–55 min after the killer's alibi, usually 30.</p>
+    </div>
+    <div>
+      <h3>Trial</h3>
+      <ol>
+        <li>Prosecutors state their evidence and the time of the crime.</li>
+        <li>The app reveals the defendant's alibi.</li>
+        <li>Everyone else votes Guilty or Not guilty in secret.</li>
+        <li>Check the suspect. Guilty ends the game; innocent clears them.</li>
+      </ol>
+
+      <h3>Scoring</h3>
+      <table>
+        <tr><th>Action</th><th class="n">Right</th><th class="n">Wrong</th></tr>
+        <tr><td>Hunch after round 2 / 3 / 4 / 5 / 6</td><td class="n">16 / 8 / 4 / 2 / 1</td><td class="n">0</td></tr>
+        <tr><td>Press release (one per category)</td><td class="n">+10</td><td class="n">−5</td></tr>
+        <tr><td>Prosecution (+1 per Guilty vote)</td><td class="n">+16</td><td class="n">−12</td></tr>
+        <tr><td>Vote Guilty</td><td class="n">+6</td><td class="n">−4</td></tr>
+        <tr><td>Vote Not guilty</td><td class="n">+7</td><td class="n">−3</td></tr>
+        <tr><td>Compliment the Chief, in hand</td><td class="n">+2</td><td class="n"></td></tr>
+      </table>
+      <p class="small" style="margin:4px 0 0"><b>Passing a hunch</b> carries half the stake to the next one. <b>Joint prosecutors</b> split base points, rounding away from zero. <b>Ties</b> go to the most evidence.</p>
+
+      <h3>Action cards</h3>
+      <div id="cards"></div>
+
+      <h3>Weighing evidence</h3>
+      <p class="small" style="margin:0">Each mark counts its round number. Add a suspect's three attribute totals; highest is most likely. Worth it when you're this sure: press release 33% · prosecute 43% · vote Guilty 55%.</p>
+    </div>
+  </div>
+</div>
+<script src="../assets/js/data.js"></script>
+<script src="../assets/js/engine.js"></script>
+<script src="../assets/js/art.js"></script>
+<script>
+(function () {
+  var D = GameData, A = Art, E = Engine;
+  var short = {
+    1: "Outfit report (shared if crowded).",
+    2: "Studio report (shared if crowded).",
+    3: "Voice report (shared if crowded).",
+    4: "Alone: crime lab or action card. Crowded: shared lab reading.",
+    5: "Announced openly. Alone: Box of Donuts. Crowded: trade.",
+    6: "Press release, or name the perpetrator and go to trial."
+  };
+  document.getElementById("locs").innerHTML = D.LOCATIONS.map(function (l) {
+    return '<div class="loc">' + A.locationIcon(l.n, true) + "<div><b>" + l.n + ". " + l.name + ":</b> " + short[l.n] + "</div></div>";
+  }).join("");
+  var rel = "";
+  for (var r = 1; r <= 9; r++) rel += "<div>R" + r + "<b>" + Math.round(E.correctChance(r) * 100) + "%</b></div>";
+  document.getElementById("rel").innerHTML = rel;
+  var counts = Object.assign({}, D.ACTION_DECK, D.DONUT_DECK);
+  document.getElementById("cards").innerHTML = Object.keys(D.CARDS).map(function (k) {
+    return '<div class="card"><b>' + D.CARDS[k].name + " ×" + counts[k] + ":</b> " + D.CARDS[k].text + "</div>";
+  }).join("");
+})();
+</script>
+</body>
+</html>

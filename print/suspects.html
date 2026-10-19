@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Interrogation · Suspect Lineup</title>
+<link rel="stylesheet" href="../assets/css/fonts.css">
+<link rel="stylesheet" href="../assets/css/print.css">
+<style>
+  .lineup { display: grid; gap: 4px; }
+  .lrow { display: grid; grid-template-columns: 0.78in repeat(8, 1fr); gap: 5px; align-items: stretch; }
+  .lrow .outfit { display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; background: var(--ink); color: #fff; border-radius: 6px; padding: 4px; font: 700 9pt/1.05 var(--head); text-transform: uppercase; letter-spacing: .04em; }
+  .lrow .outfit svg { width: 0.45in; margin-bottom: 3px; background: #f4efe4; border-radius: 50%; }
+  .mug { border: 1px solid var(--line); border-radius: 6px; overflow: hidden; position: relative; }
+  .mug svg { width: 100%; height: auto; }
+  .mug .cap { display: flex; justify-content: space-between; align-items: center; gap: 4px; padding: 2px 4px; font: 600 7.5pt/1.1 var(--head); text-transform: uppercase; border-top: 1px solid var(--line); }
+  .mug .cap .dot { width: 9px; height: 9px; border-radius: 50%; flex: none; }
+  .legend { display: flex; flex-wrap: wrap; gap: 4px 14px; align-items: center; margin-top: 8px; font: 600 9pt var(--head); text-transform: uppercase; }
+  .legend span { display: inline-flex; align-items: center; gap: 5px; }
+  .legend svg { width: 26px; }
+</style>
+</head>
+<body>
+<div class="screen-bar"><a href="index.html">← Printables</a><button onclick="print()">Print</button></div>
+<div class="page">
+  <div class="brandline"><span class="logo">Interrogation</span><span class="what">The 49 likely suspects</span><span class="spacer"></span>
+    </div>
+  <p class="small muted" style="margin:0 0 8px">Each row is one outfit. Studio number increases across each row. Each voice has its own color.</p>
+  <div class="lineup" id="lineup"></div>
+  <div class="legend" id="legend"></div>
+</div>
+<script src="../assets/js/data.js"></script>
+<script src="../assets/js/art.js"></script>
+<script>
+(function () {
+  var D = GameData, A = Art, V = D.CATEGORIES[2];
+  var rows = "";
+  D.CATEGORIES[0].values.forEach(function (outfit, d) {
+    rows += '<div class="lrow"><div class="outfit">' + A.outfitIcon(d) + outfit + "</div>";
+    D.SUSPECTS.forEach(function (s, i) {
+      if (s[0] !== d) return;
+      rows += '<div class="mug">' + A.portrait(i, { number: true, ink: true }) +
+        '<div class="cap"><b>No.' + A.pad(i + 1) + '</b><span class="dot" style="background:' + V.colors[s[2]] + '"></span><span>' + V.short[s[2]] + "</span></div></div>";
+    });
+    rows += "</div>";
+  });
+  document.getElementById("lineup").innerHTML = rows;
+  document.getElementById("legend").innerHTML = "<b>Voices:</b>" + V.values.map(function (v, k) { return "<span>" + A.voiceIcon(k) + v + "</span>"; }).join("");
+})();
+</script>
+</body>
+</html>

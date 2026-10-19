@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Interrogation · Data Sheet</title>
+<link rel="stylesheet" href="../assets/css/fonts.css">
+<link rel="stylesheet" href="../assets/css/print.css">
+<style>
+  .sheet { width: 100%; border-collapse: collapse; table-layout: fixed; }
+  .sheet th, .sheet td { border: 1px solid var(--line); padding: 0; text-align: center; }
+  .sheet col.lab { width: 0.62in; }
+  .sheet thead th { vertical-align: bottom; padding: 3px 1px 4px; border-color: var(--ink); background: #fff; }
+  .sheet thead .icon { width: 22px; margin: 0 auto 3px; }
+  .sheet thead .name { writing-mode: vertical-rl; transform: rotate(180deg); font: 600 8pt/1 var(--head); text-transform: uppercase; letter-spacing: .03em; height: 0.72in; margin: 0 auto; text-align: left; }
+  .sheet .grp { font: 700 9pt var(--head); text-transform: uppercase; letter-spacing: .1em; background: var(--ink); color: #fff; padding: 3px; border-color: var(--ink); }
+  .sheet .sep { border-left: 2.5px solid var(--ink); }
+  .sheet tbody th { font: 700 9pt/1.05 var(--head); text-transform: uppercase; text-align: left; padding: 0 5px; background: var(--soft); border-color: var(--line); }
+  .sheet tbody th .w { float: right; color: var(--pink); font-size: 10pt; }
+  .sheet tbody td { height: 0.36in; background: linear-gradient(to top right, transparent calc(50% - .6px), var(--line) calc(50% - .6px), var(--line) calc(50% + .6px), transparent calc(50% + .6px)); }
+  .sheet tbody tr:nth-child(even) td { background-color: #f8f6fb; }
+  .sheet tbody tr.total th { background: var(--ink); color: #fff; }
+  .sheet tbody tr.total td { background: #fff; border-top: 2.5px solid var(--ink); height: 0.38in; }
+  .handkey { display: flex; gap: 6px; align-items: center; font: 600 8pt var(--head); text-transform: uppercase; }
+  .handkey .cell { width: 26px; height: 22px; border: 1px solid var(--line); position: relative; background: linear-gradient(to top right, transparent calc(50% - .6px), var(--line) calc(50% - .6px), var(--line) calc(50% + .6px), transparent calc(50% + .6px)); }
+  .handkey .cell i { position: absolute; font: 700 7pt var(--head); font-style: normal; }
+  .handkey .cell i:first-child { top: 1px; left: 2px; } .handkey .cell i:last-child { bottom: 1px; right: 2px; }
+  .lower { display: grid; grid-template-columns: 1.15fr 1fr; gap: 12px; margin-top: 10px; }
+  .lab { display: grid; grid-template-columns: repeat(12, 1fr); gap: 3px; margin-top: 6px; }
+  .lab div { text-align: center; font: 600 8pt var(--head); }
+  .lab svg { width: 100%; }
+  .lab .tally { height: 0.32in; border: 1px solid var(--line); border-radius: 4px; margin-top: 2px; }
+  .mini { width: 100%; border-collapse: collapse; margin-top: 6px; }
+  .mini th, .mini td { border: 1px solid var(--line); padding: 3px 6px; font-size: 9pt; text-align: left; }
+  .mini th { font: 700 8.5pt var(--head); text-transform: uppercase; letter-spacing: .05em; background: var(--soft); }
+  .mini td.write { height: 0.3in; }
+  .mini td.pts { text-align: right; white-space: nowrap; font: 700 9pt var(--head); width: 0.6in; }
+  .hdr3 { display: flex; justify-content: space-between; align-items: baseline; }
+  .hdr3 h3 { font-size: 12pt; text-transform: uppercase; letter-spacing: .06em; }
+</style>
+</head>
+<body>
+<div class="screen-bar"><a href="index.html">← Printables</a><button onclick="print()">Print</button></div>
+<div class="page">
+  <div class="brandline"><span class="logo">Interrogation</span><span class="what">Detective's Data Sheet</span><span class="spacer"></span><span class="field">Detective<span></span></span></div>
+
+  <table class="sheet" id="sheet"></table>
+
+  <div class="row" style="display:flex;gap:16px;align-items:center;margin-top:6px">
+    <div class="handkey"><span class="cell"><i>1</i><i>2</i></span> 1st-hand marks top-left, 2nd-hand bottom-right</div>
+    <div class="small muted">Record second-hand info in the round it was gathered.</div>
+  </div>
+
+  <div class="rule" style="margin-top:8px"><b>Weighing the evidence:</b> each mark is worth its round number (a round 3 mark counts 3). Total each column that way, then add a suspect's three totals. The highest score is your most likely perpetrator.</div>
+
+  <div class="lower">
+    <div class="box">
+      <div class="hdr3"><h3>Crime lab</h3><span class="small muted">Tally each reading. The lab is never more than 25 min off.</span></div>
+      <div class="lab" id="lab"></div>
+      <div class="hdr3" style="margin-top:10px"><h3>Press releases</h3><span class="small muted">+10 right · −5 wrong</span></div>
+      <table class="mini"><thead><tr><th style="width:1in">Category</th><th>Attribute announced</th><th>Round</th></tr></thead><tbody id="press"></tbody></table>
+    </div>
+    <div class="box">
+      <div class="hdr3"><h3>Hunches</h3><span class="small muted">Wrong = 0</span></div>
+      <table class="mini"><thead><tr><th>After</th><th>Suspect No.</th><th class="pts">Base</th><th class="pts">+ Carried</th></tr></thead><tbody id="hunch"></tbody></table>
+      <p class="small" style="margin:6px 0 0">Pass, and <b>half your stake</b> (base + carried) carries to your next hunch. A hunch, right or wrong, uses up the carry.</p>
+    </div>
+  </div>
+</div>
+<script src="../assets/js/data.js"></script>
+<script src="../assets/js/art.js"></script>
+<script>
+(function () {
+  var D = GameData, A = Art, C = D.CATEGORIES;
+  var html = '<colgroup><col class="lab">' + Array(21).join("<col>") + "<col></colgroup>";
+  html += '<thead><tr><th class="grp">Round</th>' + C.map(function (c, k) {
+    return '<th class="grp' + (k ? " sep" : "") + '" colspan="7">' + c.name + "</th>";
+  }).join("") + "</tr><tr><th></th>";
+  C.forEach(function (c, ci) {
+    c.values.forEach(function (v, k) {
+      html += '<th class="' + (ci && !k ? "sep" : "") + '"><div class="icon">' + A.attributeIcon(ci, k, true) + '</div><div class="name">' + (ci === 2 ? c.short[k] : v) + "</div></th>";
+    });
+  });
+  html += "</tr></thead><tbody>";
+  for (var r = 1; r <= 9; r++) {
+    html += '<tr><th>Rd ' + r + '<span class="w">×' + r + "</span></th>";
+    for (var k = 0; k < 21; k++) html += '<td class="' + (k === 7 || k === 14 ? "sep" : "") + '"></td>';
+    html += "</tr>";
+  }
+  html += '<tr class="total"><th>Total</th>';
+  for (var j = 0; j < 21; j++) html += '<td class="' + (j === 7 || j === 14 ? "sep" : "") + '"></td>';
+  document.getElementById("sheet").innerHTML = html + "</tr></tbody>";
+
+  document.getElementById("lab").innerHTML = D.TIME_MINUTES.map(function (m, t) {
+    return "<div>" + A.clock(t, true) + m + '<div class="tally"></div></div>';
+  }).join("");
+  document.getElementById("press").innerHTML = C.map(function (c) {
+    return "<tr><td><b>" + c.name + '</b></td><td class="write"></td><td class="write" style="width:.5in"></td></tr>';
+  }).join("");
+  document.getElementById("hunch").innerHTML = [2, 3, 4, 5, 6].map(function (r) {
+    return "<tr><td><b>Round " + r + '</b></td><td class="write"></td><td class="pts">' + D.SCORING.hunchBase[r] + '</td><td class="write"></td></tr>';
+  }).join("");
+})();
+</script>
+</body>
+</html>

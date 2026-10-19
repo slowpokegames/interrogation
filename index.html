@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0b0716">
+<title>Interrogation</title>
+<link rel="stylesheet" href="assets/css/fonts.css">
+<link rel="stylesheet" href="assets/css/theme.css">
+<style>
+  .hero { text-align: center; padding: 56px 0 28px; }
+  .hero h1 { font-size: clamp(1.5rem, 8.2vw, 6rem); margin: 10px 0 14px; }
+  .hero .type { font-size: 1.1rem; max-width: 40ch; margin: 0 auto 26px; }
+  .ctas { display: grid; gap: 12px; max-width: 420px; margin: 0 auto; }
+  .marquee { overflow: hidden; padding: 6px 4px 16px; display: flex; gap: 10px; justify-content: center; margin: 34px auto 10px; max-width: 760px; }
+  .marquee > div { flex: 1; max-width: 120px; }
+  .marquee > div:nth-child(odd) { transform: translateY(10px) rotate(-2deg); }
+  .marquee > div:nth-child(even) { transform: rotate(2deg); }
+  .marquee svg { width: 100%; height: auto; display: block; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,.5); }
+  .places { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-top: 36px; }
+  .place { text-align: center; padding: 16px 10px; }
+  .place svg { width: 56px; height: 56px; }
+  .place b { display: block; font: 700 1.05rem var(--head); text-transform: uppercase; letter-spacing: .05em; margin-top: 6px; }
+  .place small { color: var(--muted); }
+  .needs { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; margin-top: 36px; }
+  footer { text-align: center; margin-top: 48px; color: var(--muted); font-size: .85rem; }
+  @media (max-width: 520px) { .marquee > div:nth-child(n+5) { display: none; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <section class="hero">
+    <div class="kicker">A game of evidence, odds and nerve · 3–6 detectives · 45–90 min</div>
+    <h1 class="neon flicker">Interrogation</h1>
+    <p class="type">Hollywood, 1983. A starlet is dead on the set of <i>Drowning in Space</i>. The witnesses can't agree, the crime lab can't tell time, and forty-nine people had access to the lot.</p>
+    <div class="ctas">
+      <a class="btn primary block" href="play.html" id="play">Open the case</a>
+      <div class="grid two" style="grid-template-columns:1fr 1fr">
+        <a class="btn block" href="rules.html">Rules</a>
+        <a class="btn block" href="print/index.html">Printables</a>
+      </div>
+    </div>
+  </section>
+
+  <div class="marquee" id="marquee"></div>
+
+  <section class="needs">
+    <div class="panel">
+      <h3>Not your usual whodunit</h3>
+      <p>In most mystery games you cross suspects off. Here, every witness might be wrong. You gather noisy evidence that gets more reliable each round, trade it with rival detectives, and decide when you're <i>sure enough</i> to act.</p>
+    </div>
+    <div class="panel">
+      <h3>What you need</h3>
+      <p>One phone or tablet, passed around the table. That's it.</p>
+      <p class="muted">Optional: printed data sheets, the suspect lineup and location cards, plus one die per player if you'd rather pick destinations with dice.</p>
+    </div>
+  </section>
+
+  <section class="places" id="places"></section>
+
+  <footer>Interrogation · originally designed 2013, rebuilt 2026 · <a href="rules.html#probability">How the odds work</a></footer>
+</div>
+<script src="assets/js/data.js"></script>
+<script src="assets/js/art.js"></script>
+<script>
+  (function () {
+    var picks = [26, 1, 40, 12, 46, 29, 35];
+    document.getElementById("marquee").innerHTML = picks.map(function (i) {
+      return "<div>" + Art.portrait(i, { number: true }) + "</div>";
+    }).join("");
+    document.getElementById("places").innerHTML = GameData.LOCATIONS.map(function (l) {
+      return '<div class="panel place">' + Art.locationIcon(l.n) + "<b>" + l.n + ". " + l.name + "</b><small>" + l.blurb + "</small></div>";
+    }).join("");
+    try {
+      if (localStorage.getItem("interrogation.save.v1")) document.getElementById("play").textContent = "Resume the case";
+    } catch (e) { /* storage unavailable */ }
+  })();
+</script>
+</body>
+</html>

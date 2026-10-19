@@ -1,0 +1,10 @@
+{
+  "name": "interrogation",
+  "private": true,
+  "description": "A crime-solving game where confidence matters.",
+  "scripts": {
+    "test": "node --test tests/*.test.js",
+    "pdf": "sh scripts/build-pdfs.sh",
+    "fonts": "node scripts/embed-fonts.js"
+  }
+}

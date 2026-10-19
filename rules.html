@@ -1,0 +1,341 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0b0716">
+<title>Interrogation · Rules</title>
+<link rel="stylesheet" href="assets/css/fonts.css">
+<link rel="stylesheet" href="assets/css/theme.css">
+<style>
+  .layout { display: grid; grid-template-columns: 220px 1fr; gap: 32px; align-items: start; }
+  nav.toc { position: sticky; top: 16px; font: 600 .95rem var(--head); letter-spacing: .04em; text-transform: uppercase; }
+  nav.toc a { display: block; color: var(--muted); text-decoration: none; padding: 5px 0; border-left: 2px solid var(--line); padding-left: 12px; }
+  nav.toc a:hover { color: var(--ink); border-left-color: var(--pink); }
+  main { min-width: 0; }
+  @media (max-width: 820px) { .layout { grid-template-columns: minmax(0, 1fr); } nav.toc { position: static; display: flex; flex-wrap: wrap; gap: 4px 14px; } nav.toc a { border: 0; padding: 2px 0; } }
+  header.top { text-align: center; padding: 30px 0 20px; }
+  header.top h1 { font-size: clamp(2rem, 9vw, 4rem); margin: 6px 0; }
+  section { margin-bottom: 44px; scroll-margin-top: 16px; }
+  section > h2 { border-bottom: 1px solid var(--line); padding-bottom: 8px; color: var(--ink); }
+  section > h2 .num { color: var(--pink); margin-right: 8px; }
+  .steps { counter-reset: step; list-style: none; padding: 0; display: grid; gap: 12px; }
+  .steps > li { counter-increment: step; position: relative; padding-left: 52px; min-height: 40px; }
+  .steps > li::before { content: counter(step); position: absolute; left: 0; top: 0; width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; border: 2px solid var(--cyan); color: var(--cyan); font: 700 1.2rem var(--head); }
+  .loc { display: grid; grid-template-columns: 64px 1fr; gap: 16px; align-items: start; padding: 16px; margin-bottom: 12px; }
+  .loc svg { width: 64px; height: 64px; }
+  .loc h3 { margin-bottom: 4px; }
+  .loc p { margin-bottom: .6em; }
+  table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+  th, td { text-align: left; padding: 9px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font: 600 .82rem var(--head); text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+  th.n { text-align: right; }
+  td.n { text-align: right; white-space: nowrap; font-weight: 600; }
+  @media (max-width: 560px) { td.n { white-space: normal; } th, td { padding: 7px 4px; } .weights { grid-template-columns: repeat(5, 1fr); } }
+  .callout { border-left: 4px solid var(--amber); }
+  .callout.cyan { border-left-color: var(--cyan); }
+  .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+  .cardx { border: 2px solid var(--amber); border-radius: 12px; padding: 14px; background: linear-gradient(160deg, #2b1d52, #170f30); }
+  .cardx b { font: 700 1.15rem var(--head); text-transform: uppercase; color: var(--amber); }
+  .cardx .count { float: right; }
+  .cardx.donut { border-color: #ff7ac6; } .cardx.donut b { color: #ff7ac6; }
+  .chart { margin: 14px 0 6px; }
+  .chart svg { width: 100%; height: auto; display: block; overflow: visible; }
+  .chart .bar { fill: var(--cyan); }
+  .chart .bar:hover { fill: #8af1ff; }
+  .chart .ref { stroke: var(--amber); stroke-dasharray: 4 4; }
+  .chart text { fill: var(--muted); font: 500 12px var(--head); }
+  .chart .val { fill: var(--ink); font-weight: 700; }
+  .chart .axis { stroke: var(--line); }
+  .ref-key { display: flex; align-items: center; gap: 8px; justify-content: flex-end; color: var(--muted); font: 500 .85rem var(--head); }
+  .ref-key svg { width: 26px; height: 8px; display: inline; }
+  .tip { position: fixed; pointer-events: none; background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; font: 600 .9rem var(--head); z-index: 200; display: none; }
+  .weights { display: grid; grid-template-columns: repeat(9, 1fr); gap: 4px; text-align: center; }
+  .weights div { background: var(--bg-2); border: 1px solid var(--line); border-radius: 8px; padding: 6px 2px; font: 600 .9rem var(--head); }
+  .weights b { display: block; font-size: 1.3rem; color: var(--cyan); }
+  .lineup-mini { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; max-width: 520px; }
+  .lineup-mini svg { width: 100%; height: auto; border-radius: 6px; display: block; }
+  .voice-key { display: flex; flex-wrap: wrap; gap: 8px 16px; margin-top: 10px; }
+  .voice-key span { display: inline-flex; align-items: center; gap: 6px; }
+  .voice-key svg { width: 30px; }
+  @media print {
+    body { background: #fff; color: #111; } body::after { display: none; }
+    nav.toc, .no-print { display: none; } .layout { display: block; }
+    .panel, .cardx { background: #fff; box-shadow: none; border-color: #bbb; }
+    .neon { color: #111; text-shadow: none; } .muted, th { color: #444; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="kicker">Official rules · 3–6 detectives</div>
+    <h1 class="neon">Interrogation</h1>
+    <p class="muted no-print"><a href="index.html">Home</a> · <a href="play.html">Play</a> · <a href="print/index.html">Printables</a></p>
+  </header>
+
+  <div class="layout">
+    <nav class="toc" aria-label="Contents">
+      <a href="#story">The case</a>
+      <a href="#quick">Quick start</a>
+      <a href="#setup">Setup</a>
+      <a href="#turn">A turn</a>
+      <a href="#locations">Locations</a>
+      <a href="#trial">Trials</a>
+      <a href="#round">End of a round</a>
+      <a href="#scoring">Scoring</a>
+      <a href="#cards">Action cards</a>
+      <a href="#weighing">Weighing evidence</a>
+      <a href="#probability">How the odds work</a>
+      <a href="#rulings">Rulings</a>
+    </nav>
+
+    <main>
+      <section id="story">
+        <h2><span class="num">01</span>The case</h2>
+        <p class="type">In 1983, a young Hollywood hopeful named Suzanne Macky is cast in the starring role of a new epic, <i>Drowning in Space</i>, shooting on the sound stages of E. F. Studios. Inexperienced actors, a terrible script and murder all vie to ruin the picture. Unfortunately for Miss Macky, she gets murdered. At the studio. We think.</p>
+        <p class="type">Conflicting eyewitness reports point to a number of suspects who had access to the lot. A bungling crime lab can't pin down the time. Can the detectives of the Hollywood PD crack the case before the nation stops caring?</p>
+        <p>Each player is a detective. A promotion awaits whoever contributes most to solving the crime: developing hunches, issuing press releases and, of course, bringing the killer to justice.</p>
+        <div class="panel callout cyan">
+          <b>The twist:</b> in most mystery games you eliminate suspects. Here, every witness might be wrong. Evidence starts out barely better than a guess and gets more reliable every round. Wait for certainty and someone else gets the credit; act too early and you'll take an innocent person to trial.
+        </div>
+      </section>
+
+      <section id="quick">
+        <h2><span class="num">02</span>Quick start</h2>
+        <p class="muted">Played before? Here's the whole game in six lines.</p>
+        <ul>
+          <li>The app picks a secret killer from the 49 suspects. Every suspect has an outfit, a studio, a voice and an alibi time.</li>
+          <li>Rounds have <b>6 turns with 3 players, 4 with 4, and 3 with 5 or 6</b>.</li>
+          <li>Each turn: call out Donut Shop trips, pick other destinations in secret, play action cards, then resolve locations 1 to 6.</li>
+          <li>Interrogations are right <b>(round + 1) × 10%</b> of the time: 20% in round 1, 50% by round 4.</li>
+          <li>After rounds 2 through 6, everyone may write a secret hunch.</li>
+          <li>The game ends when a guilty suspect is put on trial. Most points wins.</li>
+        </ul>
+      </section>
+
+      <section id="setup">
+        <h2><span class="num">03</span>Setup</h2>
+        <p><b>You need one phone or tablet</b> running the app (<a href="play.html">play.html</a>), passed around the table. Everything secret happens behind a “pass the phone” screen, so nobody needs their own device.</p>
+        <ol class="steps">
+          <li>Choose a Lead Detective (suggestion: whoever most recently played a role in a trial). Enter detectives into the app in seating order, clockwise, starting with the Lead Detective.</li>
+          <li>Choose how destinations are picked: <b>on the phone</b> (nothing else needed) or <b>with dice</b> (one die per player, faster at a big table).</li>
+          <li>Optional extras from the <a href="print/index.html">printables</a>: the suspect lineup poster for the middle of the table, a paper data sheet per player if you like pencil notes, and the location cards.</li>
+          <li>Read the briefing aloud and start round 1.</li>
+        </ol>
+        <h3>The suspects</h3>
+        <p>There are 7 outfits, 7 studios and 7 voices: 343 possible combinations, but only <b>49</b> of them are suspects. Each row of the lineup is one outfit, with the studio number increasing across the row. Every voice has its own color.</p>
+        <div class="lineup-mini" id="lineupMini"></div>
+        <div class="voice-key" id="voiceKey"></div>
+      </section>
+
+      <section id="turn">
+        <h2><span class="num">04</span>A turn</h2>
+        <ol class="steps">
+          <li><b>Donut calls.</b> Starting with the Lead Detective and going clockwise, anyone may announce they're heading to the Donut Shop. Others can then join. Once everyone has had a chance, it's settled for the turn.</li>
+          <li><b>Secret destinations.</b> Everyone else picks a destination in secret: on the phone, or by setting a die and revealing all dice at once. You can't pick the Donut Shop in secret.</li>
+          <li><b>Action cards.</b> After destinations are revealed, anyone may play one card from their hand.</li>
+          <li><b>Locations resolve</b> in order, 1 through 6. The app walks the table through each one.</li>
+        </ol>
+        <p class="muted">Whenever an order isn't otherwise specified, the Lead Detective goes first.</p>
+      </section>
+
+      <section id="locations">
+        <h2><span class="num">05</span>The locations</h2>
+        <div id="locList"></div>
+        <div class="panel callout"><b>Sharing a location.</b> At the Diner, the Studio, Rodeo Drive and the crime lab, everyone at the location receives the <i>same single</i> piece of information. Crowding a location wastes turns. Going where nobody else goes is how you get ahead.</div>
+      </section>
+
+      <section id="trial">
+        <h2><span class="num">06</span>Trials</h2>
+        <ol class="steps">
+          <li>The prosecutor (or prosecutors, if several named the same suspect) states their evidence for each attribute out loud and names the <b>time of the crime</b>. Joint prosecutors may compare crime lab notes privately and must agree on a time.</li>
+          <li>The app reveals the defendant's <b>alibi time</b>. The real crime time is never the alibi time, and is most often 30 minutes away from it.</li>
+          <li>Every other detective secretly votes <b>Guilty</b> or <b>Not guilty</b>. Votes are revealed together.</li>
+          <li>The prosecutor checks the suspect. If the defendant <i>is</i> guilty (not merely found guilty), the game ends. If innocent, they are cleared, points are scored, and the investigation continues.</li>
+        </ol>
+        <p>If detectives at the Prosecutor's Office name different suspects, each gets a separate trial, in turn.</p>
+      </section>
+
+      <section id="round">
+        <h2><span class="num">07</span>End of a round</h2>
+        <p>When the last turn of a round ends, the Lead Detective role passes one seat to the left, and witnesses become more reliable.</p>
+        <h3>Hunches</h3>
+        <p>After rounds 2, 3, 4, 5 and 6, each detective secretly either writes a hunch (the suspect they think did it) or passes. Say out loud <i>whether</i> you wrote one, but never <i>who</i>.</p>
+        <table>
+          <thead><tr><th>Hunch after</th><th class="n">Base points</th><th class="n">If you passed every time</th></tr></thead>
+          <tbody id="hunchRows"></tbody>
+        </table>
+        <p style="margin-top:12px">A correct hunch scores its base points plus anything carried. A wrong hunch scores nothing and uses up the carry. <b>Passing carries half the stake</b> forward to your next hunch. Hunch correctly every time and you score 16 + 8 + 4 + 2 + 1 = 31.</p>
+      </section>
+
+      <section id="scoring">
+        <h2><span class="num">08</span>Scoring</h2>
+        <table>
+          <thead><tr><th>Action</th><th class="n">Right</th><th class="n">Wrong</th><th>Notes</th></tr></thead>
+          <tbody>
+            <tr><td>Hunch</td><td class="n">16 / 8 / 4 / 2 / 1</td><td class="n">0</td><td>Plus carried points. See <a href="#round">End of a round</a>.</td></tr>
+            <tr><td>Press release</td><td class="n">+10</td><td class="n">−5</td><td>Joint releases score the same for each detective.</td></tr>
+            <tr><td>Prosecution</td><td class="n">+16</td><td class="n">−12</td><td>Plus 1 per Guilty vote. Joint prosecutors split the base points evenly, rounding away from zero; each still gets +1 per Guilty vote.</td></tr>
+            <tr><td>Vote Guilty</td><td class="n">+6</td><td class="n">−4</td><td>“Right” means the defendant really did it.</td></tr>
+            <tr><td>Vote Not guilty</td><td class="n">+7</td><td class="n">−3</td><td>“Right” means the defendant is innocent.</td></tr>
+            <tr><td>Compliment the Chief</td><td class="n">+2</td><td class="n">—</td><td>Scored if still in hand at the end.</td></tr>
+          </tbody>
+        </table>
+        <p style="margin-top:12px">Ties go to the detective with the most evidence gathered, first- and second-hand.</p>
+        <div class="panel callout cyan">
+          <b>When is it worth it?</b> The payoffs tell you how sure you need to be. A press release pays off when you're more than <b>33%</b> sure, a prosecution above about <b>43%</b>, and a Guilty vote above <b>55%</b>, a built-in presumption of innocence.
+        </div>
+      </section>
+
+      <section id="cards">
+        <h2><span class="num">09</span>Action cards</h2>
+        <p>The action deck has 11 cards; the Box of Donuts deck has 4. Cards marked <i>immediately</i> resolve as soon as they're drawn. The others go to your hand to play on a later turn, after destinations are revealed (one card per detective per turn).</p>
+        <div class="cards" id="cardList"></div>
+      </section>
+
+      <section id="weighing">
+        <h2><span class="num">10</span>Weighing the evidence</h2>
+        <p>Later evidence is far more reliable, so it should count for more. The rule of thumb on the data sheet and in the app's notebook is almost exactly what a statistician would do:</p>
+        <div class="panel callout"><b>Each mark is worth its round number.</b> A report from round 3 counts 3. Total each attribute that way, then add a suspect's three totals together. The highest score is your most likely perpetrator.</div>
+        <p style="margin-top:14px">Why it works: how much a matching report should shift your odds grows with the round, and in log-odds terms it grows almost exactly linearly. The true weight of a report, relative to a round-1 report:</p>
+        <div class="weights" id="weights"></div>
+        <p class="muted small" style="margin-top:8px">Record second-hand information in the round it was <i>gathered</i>, not the round you heard it.</p>
+      </section>
+
+      <section id="probability">
+        <h2><span class="num">11</span>How the odds work</h2>
+        <h3>Witness reliability by round</h3>
+        <p>An interrogation gives the true attribute (round + 1) × 10% of the time. Otherwise it names one of the six wrong values at random. In round 1 a report is only a little better than a blind guess (14%). From round 9 on, every report is true.</p>
+        <div class="chart" id="chartReliability" role="img" aria-label="Bar chart: chance a witness is right, by round"></div>
+        <h3>The crime lab</h3>
+        <p>The lab's accuracy never changes. Each reading is the true time plus a random error (two dice, minus seven, in five-minute steps): exactly right 17% of the time, within five minutes 44%, and never off by 30 minutes.</p>
+        <div class="chart" id="chartLab" role="img" aria-label="Bar chart: crime lab reading error"></div>
+        <h3>Alibis</h3>
+        <p>The killer's crime time is their alibi time plus 5 to 55 minutes, most often 30. An innocent suspect's alibi is unrelated to the crime. At a trial, compare the alibi to your crime lab readings: an alibi about 30 minutes from the crime fits, while an alibi right at your estimated crime time points to innocence.</p>
+        <div class="chart" id="chartAlibi" role="img" aria-label="Bar chart: gap between the killer's alibi and the crime"></div>
+        <h3>Why only 49 suspects?</h3>
+        <p>Only one combination in seven is a real suspect. That works like an error-correcting code: a garbled report often points to a combination nobody has, and the real suspects stand out sooner. Even so, two attributes never pin down a single suspect, so all three locations matter.</p>
+      </section>
+
+      <section id="rulings">
+        <h2><span class="num">12</span>Rulings</h2>
+        <table>
+          <tbody>
+            <tr><th>Trading</th><td>You may offer first- or second-hand information and trade in pairs or as a group. You may not attach conditions (“don't pass this on”) or promise future information. Decide before the game whether bluffing is allowed; for a first game we suggest no lying, though you can always keep things to yourself.</td></tr>
+            <tr><th>Steal a Peek</th><td>In round 1 there is no “last round”, so it reveals information from the current round so far.</td></tr>
+            <tr><th>Strong-arm &amp; Sirens</th><td>These affect information-giving locations: the Diner, the Studio, Rodeo Drive and the crime lab.</td></tr>
+            <tr><th>Work During Lunch</th><td>Joining a location that already resolved this turn gives you the same information its visitors got. If nobody was there, you interview fresh.</td></tr>
+            <tr><th>Press releases</th><td>At most one per category per game, three in total. Conflicting releases in the same category cancel each other.</td></tr>
+            <tr><th>Phone etiquette</th><td>When the phone says it's someone's private screen, everyone else looks away. The case log records every public action, so mistakes are easy to spot.</td></tr>
+          </tbody>
+        </table>
+      </section>
+    </main>
+  </div>
+</div>
+<div class="tip" id="tip"></div>
+<script src="assets/js/data.js"></script>
+<script src="assets/js/engine.js"></script>
+<script src="assets/js/art.js"></script>
+<script>
+(function () {
+  var D = GameData, A = Art, E = Engine;
+  function $(id) { return document.getElementById(id); }
+
+  // Lineup sample: one suspect per outfit
+  $("lineupMini").innerHTML = [0, 8, 14, 21, 29, 34, 41].map(function (i) { return A.portrait(i, { number: true }); }).join("");
+  $("voiceKey").innerHTML = D.CATEGORIES[2].values.map(function (v, k) { return "<span>" + A.voiceIcon(k) + v + "</span>"; }).join("");
+
+  var detail = {
+    1: "If one detective goes, they get one report on the killer's outfit. If several go, they all see the same single report.",
+    2: "One report on which sound stage the murder happened in, shared by everyone there.",
+    3: "One report on the killer's voice, shared by everyone there.",
+    4: "Alone? Choose: a crime lab time estimate, or draw an action card. With company, everyone gets the same crime lab reading.",
+    5: "Alone? Take a Box of Donuts card. With company, negotiate and trade information. Record what you receive in your notebook.",
+    6: "Alone? Choose: issue a press release (announce one attribute you believe the killer has) or name the perpetrator and go to trial. With company, everyone secretly declares which. Matching press releases are made jointly; conflicting ones in the same category are cancelled. Then any trials are held."
+  };
+  $("locList").innerHTML = D.LOCATIONS.map(function (l) {
+    return '<div class="panel loc">' + A.locationIcon(l.n) + "<div><h3>" + l.n + ". " + l.name + '</h3><p class="muted">' + l.blurb + "</p><p>" + detail[l.n] + "</p></div></div>";
+  }).join("");
+
+  var counts = Object.assign({}, D.ACTION_DECK, D.DONUT_DECK);
+  $("cardList").innerHTML = Object.keys(D.CARDS).map(function (k) {
+    var c = D.CARDS[k];
+    return '<div class="cardx' + (k === "donuts" ? " donut" : "") + '"><span class="chip count">×' + counts[k] + "</span><b>" + c.name + "</b>" +
+      (c.when === "draw" ? ' <span class="kicker">immediately</span>' : "") + '<p style="margin:.5em 0 0">' + c.text + "</p></div>";
+  }).join("");
+
+  var hunchRows = "", carry = 0;
+  [2, 3, 4, 5, 6].forEach(function (r) {
+    var base = D.SCORING.hunchBase[r], stake = base + carry;
+    hunchRows += "<tr><td>Round " + r + '</td><td class="n">' + base + '</td><td class="n">' + stake + "</td></tr>";
+    carry = stake / 2;
+  });
+  $("hunchRows").innerHTML = hunchRows;
+
+  // True weight of a report: log likelihood ratio relative to round 1.
+  function llr(r) { var p = E.correctChance(r); return p >= 1 ? Infinity : Math.log(p / ((1 - p) / 6)); }
+  var w = "";
+  for (var r = 1; r <= 9; r++) w += "<div>R" + r + "<b>" + (r === 9 ? "∞" : (llr(r) / llr(1)).toFixed(1)) + "</b></div>";
+  $("weights").innerHTML = w;
+
+  // ---------- charts: one series each, thin rounded bars, hover tooltips ----------
+  var tip = $("tip");
+  function barChart(el, data, opts) {
+    var W = 640, H = 220, pad = { l: 36, r: 8, t: 22, b: 30 }, iw = W - pad.l - pad.r, ih = H - pad.t - pad.b;
+    var max = opts.max, step = iw / data.length, bw = Math.min(26, step * 0.55), svg = "";
+    opts.ticks.forEach(function (t) {
+      var y = pad.t + ih - (t / max) * ih;
+      svg += '<line class="axis" x1="' + pad.l + '" x2="' + (W - pad.r) + '" y1="' + y + '" y2="' + y + '"/>' +
+        '<text x="' + (pad.l - 6) + '" y="' + (y + 4) + '" text-anchor="end">' + t + "%</text>";
+    });
+    if (opts.ref != null) {
+      var ry = pad.t + ih - (opts.ref / max) * ih;
+      svg += '<line class="ref" x1="' + pad.l + '" x2="' + (W - pad.r) + '" y1="' + ry + '" y2="' + ry + '"/>';
+    }
+    data.forEach(function (d, i) {
+      var h = Math.max(1, (d.value / max) * ih), x = pad.l + i * step + (step - bw) / 2, y = pad.t + ih - h;
+      // Rounded data end, square at the baseline
+      svg += '<path class="bar" data-tip="' + d.tip + '" d="M' + x + "," + (y + h) + " V" + (y + 4) + " Q" + x + "," + y + " " + (x + 4) + "," + y +
+        " H" + (x + bw - 4) + " Q" + (x + bw) + "," + y + " " + (x + bw) + "," + (y + 4) + " V" + (y + h) + ' Z"/>';
+      // Generous hover target
+      svg += '<rect x="' + (pad.l + i * step) + '" y="' + pad.t + '" width="' + step + '" height="' + ih + '" fill="transparent" data-tip="' + d.tip + '"/>';
+      if (d.label) svg += '<text class="val" x="' + (x + bw / 2) + '" y="' + (y - 6) + '" text-anchor="middle">' + d.label + "</text>";
+      svg += '<text x="' + (x + bw / 2) + '" y="' + (H - 10) + '" text-anchor="middle">' + d.x + "</text>";
+    });
+    svg += '<line class="axis" x1="' + pad.l + '" x2="' + (W - pad.r) + '" y1="' + (pad.t + ih) + '" y2="' + (pad.t + ih) + '"/>';
+    el.innerHTML = '<svg viewBox="0 0 ' + W + " " + H + '">' + svg + "</svg>" +
+      (opts.refLabel ? '<div class="ref-key"><svg width="26" height="8"><line class="ref" x1="0" x2="26" y1="4" y2="4" stroke-width="2"/></svg>' + opts.refLabel + "</div>" : "");
+  }
+  document.addEventListener("mousemove", function (ev) {
+    var t = ev.target.getAttribute && ev.target.getAttribute("data-tip");
+    if (!t) { tip.style.display = "none"; return; }
+    tip.textContent = t; tip.style.display = "block";
+    tip.style.left = ev.clientX + 12 + "px"; tip.style.top = ev.clientY - 36 + "px";
+  });
+
+  var rel = [];
+  for (var k = 1; k <= 9; k++) {
+    var p = Math.round(E.correctChance(k) * 100);
+    rel.push({ x: "R" + k, value: p, label: k === 1 || k === 4 || k === 9 ? p + "%" : "", tip: "Round " + k + ": right " + p + "% of the time" });
+  }
+  barChart($("chartReliability"), rel, { max: 100, ticks: [0, 25, 50, 75, 100], ref: 100 / 7, refLabel: "Blind guess 14%" });
+
+  var lab = [];
+  for (var off = -5; off <= 5; off++) {
+    var pr = (6 - Math.abs(off)) / 36 * 100, lbl = (off > 0 ? "+" : "") + off * 5;
+    lab.push({ x: lbl, value: pr, label: off === 0 ? pr.toFixed(0) + "%" : "", tip: (off === 0 ? "Exactly right" : lbl + " min") + ": " + pr.toFixed(1) + "%" });
+  }
+  barChart($("chartLab"), lab, { max: 20, ticks: [0, 5, 10, 15, 20] });
+
+  var ali = [];
+  for (var g = 1; g <= 11; g++) {
+    var pa = (6 - Math.abs(g - 6)) / 36 * 100;
+    ali.push({ x: g * 5 + "m", value: pa, label: g === 6 ? pa.toFixed(0) + "%" : "", tip: "Crime " + g * 5 + " min after alibi: " + pa.toFixed(1) + "%" });
+  }
+  barChart($("chartAlibi"), ali, { max: 20, ticks: [0, 5, 10, 15, 20] });
+})();
+</script>
+</body>
+</html>

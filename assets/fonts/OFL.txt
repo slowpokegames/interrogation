@@ -1,0 +1,6 @@
+The fonts in this folder are licensed under the SIL Open Font License, Version 1.1
+(https://openfontlicense.org), and were obtained from Google Fonts:
+
+- Monoton, Copyright 2011 Vernon Adams
+- Special Elite, Copyright 2010 Astigmatic One Eye Typographic Institute
+- Barlow and Barlow Condensed, Copyright 2017 The Barlow Project Authors
