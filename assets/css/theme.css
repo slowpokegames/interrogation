@@ -106,7 +106,7 @@ p { margin: 0 0 1em; }
 .btn.primary:hover { box-shadow: 0 0 30px rgba(255, 46, 136, 0.75); }
 .btn.ghost { border-color: var(--line); background: transparent; color: var(--muted); }
 .btn.block { width: 100%; }
-.btn[disabled] { opacity: 0.35; pointer-events: none; }
+.btn[disabled], .btn.disabled { opacity: 0.35; cursor: not-allowed; box-shadow: none; }
 .btn:focus-visible, .choice:focus-visible, input:focus-visible, select:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
 
 input[type="text"], input[type="number"], select {

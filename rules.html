@@ -39,6 +39,7 @@
   .cardx b { font: 700 1.15rem var(--head); text-transform: uppercase; color: var(--amber); }
   .cardx .count { float: right; }
   .cardx.donut { border-color: #ff7ac6; } .cardx.donut b { color: #ff7ac6; }
+  .cardx.ai { border-color: var(--cyan); } .cardx.ai b { color: var(--cyan); }
   .chart { margin: 14px 0 6px; }
   .chart svg { width: 100%; height: auto; display: block; overflow: visible; }
   .chart .bar { fill: var(--cyan); }
@@ -85,6 +86,7 @@
       <a href="#round">End of a round</a>
       <a href="#scoring">Scoring</a>
       <a href="#cards">Action cards</a>
+      <a href="#ai">AI detectives</a>
       <a href="#weighing">Weighing evidence</a>
       <a href="#probability">How the odds work</a>
       <a href="#rulings">Rulings</a>
@@ -94,7 +96,7 @@
       <section id="story">
         <h2><span class="num">01</span>The case</h2>
         <p class="type">In 1983, a young Hollywood hopeful named Suzanne Macky is cast in the starring role of a new epic, <i>Drowning in Space</i>, shooting on the sound stages of E. F. Studios. Inexperienced actors, a terrible script and murder all vie to ruin the picture. Unfortunately for Miss Macky, she gets murdered. At the studio. We think.</p>
-        <p class="type">Conflicting eyewitness reports point to a number of suspects who had access to the lot. A bungling crime lab can't pin down the time. Can the detectives of the Hollywood PD crack the case before the nation stops caring?</p>
+        <p class="type">Conflicting eyewitness reports point to a number of suspects who had access to the lot. A bungling crime lab can only guess the hour of death, give or take a few hours. The studio gate log shows when every suspect signed out, and the killer signed out like everyone else, then slipped back onto the lot hours later. Can the detectives of the Hollywood PD crack the case before the nation stops caring?</p>
         <p>Each player is a detective. A promotion awaits whoever contributes most to solving the crime: developing hunches, issuing press releases and, of course, bringing the killer to justice.</p>
         <div class="panel callout cyan">
           <b>The twist:</b> in most mystery games you eliminate suspects. Here, every witness might be wrong. Evidence starts out barely better than a guess and gets more reliable every round. Wait for certainty and someone else gets the credit; act too early and you'll take an innocent person to trial.
@@ -105,26 +107,27 @@
         <h2><span class="num">02</span>Quick start</h2>
         <p class="muted">Played before? Here's the whole game in six lines.</p>
         <ul>
-          <li>The app picks a secret killer from the 49 suspects. Every suspect has an outfit, a studio, a voice and an alibi time.</li>
+          <li>The app picks a secret killer from the 49 suspects. Every suspect has an outfit, a studio, a voice and an alibi: the hour the gate log shows him or her signing out.</li>
           <li>Rounds have <b>6 turns with 3 players, 4 with 4, and 3 with 5 or 6</b>.</li>
           <li>Each turn: call out Donut Shop trips, pick other destinations in secret, play action cards, then resolve locations 1 to 6.</li>
           <li>Interrogations are right <b>(round + 1) × 10%</b> of the time: 20% in round 1, 50% by round 4.</li>
           <li>After rounds 2 through 6, everyone may write a secret hunch.</li>
+          <li>Any seat can be an AI detective. Play with friends, against the AIs alone, or sit back and watch the AIs work the case.</li>
           <li>The game ends when a guilty suspect is put on trial. Most points wins.</li>
         </ul>
       </section>
 
       <section id="setup">
         <h2><span class="num">03</span>Setup</h2>
-        <p><b>You need one phone or tablet</b> running the app (<a href="play.html">play.html</a>), passed around the table. Everything secret happens behind a “pass the phone” screen, so nobody needs their own device.</p>
+        <p><b>You need one phone or tablet</b> running the app (<a href="play.html">play.html</a>), passed around the table. Everything secret happens behind a “pass the phone” screen, so nobody needs a second device. Playing alone against AI detectives? There's nothing to hide, so the phone stays with you.</p>
         <ol class="steps">
-          <li>Choose a Lead Detective (suggestion: whoever most recently played a role in a trial). Enter detectives into the app in seating order, clockwise, starting with the Lead Detective.</li>
+          <li>Choose a Lead Detective (suggestion: whoever most recently played a role in a trial). Enter detectives into the app in seating order, clockwise, starting with the Lead Detective. Set any seat to an <a href="#ai">AI detective</a>.</li>
           <li>Choose how destinations are picked: <b>on the phone</b> (nothing else needed) or <b>with dice</b> (one die per player, faster at a big table).</li>
           <li>Optional extras from the <a href="print/index.html">printables</a>: the suspect lineup poster for the middle of the table, a paper data sheet per player if you like pencil notes, and the location cards.</li>
           <li>Read the briefing aloud and start round 1.</li>
         </ol>
         <h3>The suspects</h3>
-        <p>There are 7 outfits, 7 studios and 7 voices: 343 possible combinations, but only <b>49</b> of them are suspects. Each row of the lineup is one outfit, with the studio number increasing across the row. Every voice has its own color.</p>
+        <p>There are 7 outfits, 7 studios and 7 voices: 343 possible combinations, but only <b>49</b> of them are suspects. Each row of the lineup is one voice, with its own color. Within a row, suspects are sorted by studio number. Outfits are the easiest thing to spot in a picture, so they are left unsorted.</p>
         <div class="lineup-mini" id="lineupMini"></div>
         <div class="voice-key" id="voiceKey"></div>
       </section>
@@ -132,9 +135,9 @@
       <section id="turn">
         <h2><span class="num">04</span>A turn</h2>
         <ol class="steps">
-          <li><b>Donut calls.</b> Starting with the Lead Detective and going clockwise, anyone may announce they're heading to the Donut Shop. Others can then join. Once everyone has had a chance, it's settled for the turn.</li>
+          <li><b>Donut calls.</b> Starting with the Lead Detective and going clockwise, anyone may announce that he or she is heading to the Donut Shop. Others can then join. Once everyone has had a chance, it's settled for the turn.</li>
           <li><b>Secret destinations.</b> Everyone else picks a destination in secret: on the phone, or by setting a die and revealing all dice at once. You can't pick the Donut Shop in secret.</li>
-          <li><b>Action cards.</b> After destinations are revealed, anyone may play one card from their hand.</li>
+          <li><b>Action cards.</b> After destinations are revealed, anyone may play one card from his or her hand.</li>
           <li><b>Locations resolve</b> in order, 1 through 6. The app walks the table through each one.</li>
         </ol>
         <p class="muted">Whenever an order isn't otherwise specified, the Lead Detective goes first.</p>
@@ -149,10 +152,10 @@
       <section id="trial">
         <h2><span class="num">06</span>Trials</h2>
         <ol class="steps">
-          <li>The prosecutor (or prosecutors, if several named the same suspect) states their evidence for each attribute out loud and names the <b>time of the crime</b>. Joint prosecutors may compare crime lab notes privately and must agree on a time.</li>
-          <li>The app reveals the defendant's <b>alibi time</b>. The real crime time is never the alibi time, and is most often 30 minutes away from it.</li>
+          <li>The prosecutor (or prosecutors, if several named the same suspect) states the evidence for each attribute out loud and names the <b>hour of the crime</b>. Joint prosecutors may compare crime lab notes privately and must agree on an hour.</li>
+          <li>The app reveals the defendant's <b>alibi</b>: the hour the gate log shows the defendant signing out. The killer always came back 1 to 16 hours after signing out, most often 8 or 9. So if the crime happened at the hour the defendant signed out, or in the 7 hours before it, the defendant is innocent.</li>
           <li>Every other detective secretly votes <b>Guilty</b> or <b>Not guilty</b>. Votes are revealed together.</li>
-          <li>The prosecutor checks the suspect. If the defendant <i>is</i> guilty (not merely found guilty), the game ends. If innocent, they are cleared, points are scored, and the investigation continues.</li>
+          <li>The prosecutor checks the suspect. If the defendant <i>is</i> guilty (not merely found guilty), the game ends. If innocent, he or she is cleared, points are scored, and the investigation continues.</li>
         </ol>
         <p>If detectives at the Prosecutor's Office name different suspects, each gets a separate trial, in turn.</p>
       </section>
@@ -161,7 +164,7 @@
         <h2><span class="num">07</span>End of a round</h2>
         <p>When the last turn of a round ends, the Lead Detective role passes one seat to the left, and witnesses become more reliable.</p>
         <h3>Hunches</h3>
-        <p>After rounds 2, 3, 4, 5 and 6, each detective secretly either writes a hunch (the suspect they think did it) or passes. Say out loud <i>whether</i> you wrote one, but never <i>who</i>.</p>
+        <p>After rounds 2, 3, 4, 5 and 6, each detective secretly either writes a hunch (the suspect he or she thinks did it) or passes. Say out loud <i>whether</i> you wrote one, but never <i>who</i>.</p>
         <table>
           <thead><tr><th>Hunch after</th><th class="n">Base points</th><th class="n">If you passed every time</th></tr></thead>
           <tbody id="hunchRows"></tbody>
@@ -194,8 +197,22 @@
         <div class="cards" id="cardList"></div>
       </section>
 
+      <section id="ai">
+        <h2><span class="num">10</span>AI detectives</h2>
+        <p>Any seat can be filled by an AI detective. AIs play by the same rules and see only what a person in that seat would: their own notes, their own cards and anything announced publicly. They never peek at the answer. Behind the scenes, each one weighs the evidence the way the <a href="#probability">odds</a> say it should; what differs is nerve.</p>
+        <div class="cards" id="aiList"></div>
+        <h3 style="margin-top:20px">Playing with AIs</h3>
+        <ul>
+          <li><b>Their secret choices</b> (destinations, prosecutor's office, votes, hunches) happen instantly. Nobody needs to pass them the phone.</li>
+          <li><b>Trading with an AI</b> is private and one for one. On the trade screen, tap your name next to the AI's. You pick which of your notes to give, then see what it gives you. AIs never bluff, and they never offer you the same note twice.</li>
+          <li><b>AI prosecutors</b> lay out their evidence on screen and name the hour of the crime that their lab readings point to.</li>
+          <li><b>Only one person at the table:</b> nothing needs hiding, so private screens open straight away.</li>
+          <li><b>All AIs:</b> pick an AI for every seat and the app becomes a spectator mode. Every secret is shown with the AI's reasoning, and you tap through the case at your own pace. It's a good way to learn how the odds play out.</li>
+        </ul>
+      </section>
+
       <section id="weighing">
-        <h2><span class="num">10</span>Weighing the evidence</h2>
+        <h2><span class="num">11</span>Weighing the evidence</h2>
         <p>Later evidence is far more reliable, so it should count for more. The rule of thumb on the data sheet and in the app's notebook is almost exactly what a statistician would do:</p>
         <div class="panel callout"><b>Each mark is worth its round number.</b> A report from round 3 counts 3. Total each attribute that way, then add a suspect's three totals together. The highest score is your most likely perpetrator.</div>
         <p style="margin-top:14px">Why it works: how much a matching report should shift your odds grows with the round, and in log-odds terms it grows almost exactly linearly. The true weight of a report, relative to a round-1 report:</p>
@@ -204,25 +221,25 @@
       </section>
 
       <section id="probability">
-        <h2><span class="num">11</span>How the odds work</h2>
+        <h2><span class="num">12</span>How the odds work</h2>
         <h3>Witness reliability by round</h3>
         <p>An interrogation gives the true attribute (round + 1) × 10% of the time. Otherwise it names one of the six wrong values at random. In round 1 a report is only a little better than a blind guess (14%). From round 9 on, every report is true.</p>
         <div class="chart" id="chartReliability" role="img" aria-label="Bar chart: chance a witness is right, by round"></div>
         <h3>The crime lab</h3>
-        <p>The lab's accuracy never changes. Each reading is the true time plus a random error (two dice, minus seven, in five-minute steps): exactly right 17% of the time, within five minutes 44%, and never off by 30 minutes.</p>
+        <p>The lab's accuracy never changes. Each reading is the true hour plus a random error of two dice minus seven hours: exactly right 17% of the time, within an hour 44%, and never off by six hours or more. The clock runs the whole day, so a crime at 11 PM can read as 2 AM, but never as 11 AM.</p>
         <div class="chart" id="chartLab" role="img" aria-label="Bar chart: crime lab reading error"></div>
         <h3>Alibis</h3>
-        <p>The killer's crime time is their alibi time plus 5 to 55 minutes, most often 30. An innocent suspect's alibi is unrelated to the crime. At a trial, compare the alibi to your crime lab readings: an alibi about 30 minutes from the crime fits, while an alibi right at your estimated crime time points to innocence.</p>
-        <div class="chart" id="chartAlibi" role="img" aria-label="Bar chart: gap between the killer's alibi and the crime"></div>
+        <p>The killer struck 1 to 16 hours after signing out at the gate (three dice minus two), most often 8 or 9 hours later. An innocent suspect could have signed out at any hour of the day. At a trial, compare the alibi to your crime lab readings: a sign-out about eight hours before the crime fits best, and the fit fades gently the further you get from that. A sign-out at the hour of the crime, or up to 7 hours after it, is impossible for the killer, so 8 hours of the clock clear a defendant outright. Because your lab readings are only estimates, treat a sign-out near your estimated hour of the crime as strong evidence of innocence rather than proof.</p>
+        <div class="chart" id="chartAlibi" role="img" aria-label="Bar chart: hours between the killer signing out and the crime"></div>
         <h3>Why only 49 suspects?</h3>
         <p>Only one combination in seven is a real suspect. That works like an error-correcting code: a garbled report often points to a combination nobody has, and the real suspects stand out sooner. Even so, two attributes never pin down a single suspect, so all three locations matter.</p>
       </section>
 
       <section id="rulings">
-        <h2><span class="num">12</span>Rulings</h2>
+        <h2><span class="num">13</span>Rulings</h2>
         <table>
           <tbody>
-            <tr><th>Trading</th><td>You may offer first- or second-hand information and trade in pairs or as a group. You may not attach conditions (“don't pass this on”) or promise future information. Decide before the game whether bluffing is allowed; for a first game we suggest no lying, though you can always keep things to yourself.</td></tr>
+            <tr><th>Trading</th><td>You may offer first- or second-hand information and trade in pairs or as a group. You may not attach conditions (“don't pass this on”) or promise future information. <b>No bluffing:</b> anything you share must be exactly what is in your notes, including the round it was gathered. You can always keep things to yourself.</td></tr>
             <tr><th>Steal a Peek</th><td>In round 1 there is no “last round”, so it reveals information from the current round so far.</td></tr>
             <tr><th>Strong-arm &amp; Sirens</th><td>These affect information-giving locations: the Diner, the Studio, Rodeo Drive and the crime lab.</td></tr>
             <tr><th>Work During Lunch</th><td>Joining a location that already resolved this turn gives you the same information its visitors got. If nobody was there, you interview fresh.</td></tr>
@@ -237,26 +254,34 @@
 <div class="tip" id="tip"></div>
 <script src="assets/js/data.js"></script>
 <script src="assets/js/engine.js"></script>
+<script src="assets/js/ai.js"></script>
 <script src="assets/js/art.js"></script>
 <script>
 (function () {
   var D = GameData, A = Art, E = Engine;
   function $(id) { return document.getElementById(id); }
 
-  // Lineup sample: one suspect per outfit
-  $("lineupMini").innerHTML = [0, 8, 14, 21, 29, 34, 41].map(function (i) { return A.portrait(i, { number: true }); }).join("");
+  // Lineup sample: the first suspect in each voice row
+  var firsts = [];
+  D.SUSPECTS.forEach(function (s, i) { if (firsts.length === s[2]) firsts.push(i); });
+  $("lineupMini").innerHTML = firsts.map(function (i) { return A.portrait(i, { number: true }); }).join("");
   $("voiceKey").innerHTML = D.CATEGORIES[2].values.map(function (v, k) { return "<span>" + A.voiceIcon(k) + v + "</span>"; }).join("");
 
   var detail = {
-    1: "If one detective goes, they get one report on the killer's outfit. If several go, they all see the same single report.",
+    1: "If one detective goes, he or she gets one report on the killer's outfit. If several go, they all see the same single report.",
     2: "One report on which sound stage the murder happened in, shared by everyone there.",
     3: "One report on the killer's voice, shared by everyone there.",
-    4: "Alone? Choose: a crime lab time estimate, or draw an action card. With company, everyone gets the same crime lab reading.",
+    4: "Alone? Choose: a crime lab estimate of the hour of death, or draw an action card. With company, everyone gets the same crime lab reading.",
     5: "Alone? Take a Box of Donuts card. With company, negotiate and trade information. Record what you receive in your notebook.",
     6: "Alone? Choose: issue a press release (announce one attribute you believe the killer has) or name the perpetrator and go to trial. With company, everyone secretly declares which. Matching press releases are made jointly; conflicting ones in the same category are cancelled. Then any trials are held."
   };
   $("locList").innerHTML = D.LOCATIONS.map(function (l) {
     return '<div class="panel loc">' + A.locationIcon(l.n) + "<div><h3>" + l.n + ". " + l.name + '</h3><p class="muted">' + l.blurb + "</p><p>" + detail[l.n] + "</p></div></div>";
+  }).join("");
+
+  $("aiList").innerHTML = AI.ORDER.map(function (k) {
+    var P = AI.PERSONALITIES[k];
+    return '<div class="cardx ai"><b>' + P.name + '</b> <span class="kicker">' + P.title + '</span><p style="margin:.5em 0 0">' + P.blurb + "</p></div>";
   }).join("");
 
   var counts = Object.assign({}, D.ACTION_DECK, D.DONUT_DECK);
@@ -324,15 +349,15 @@
 
   var lab = [];
   for (var off = -5; off <= 5; off++) {
-    var pr = (6 - Math.abs(off)) / 36 * 100, lbl = (off > 0 ? "+" : "") + off * 5;
-    lab.push({ x: lbl, value: pr, label: off === 0 ? pr.toFixed(0) + "%" : "", tip: (off === 0 ? "Exactly right" : lbl + " min") + ": " + pr.toFixed(1) + "%" });
+    var pr = (6 - Math.abs(off)) / 36 * 100, lbl = (off > 0 ? "+" : "") + off + "h";
+    lab.push({ x: lbl, value: pr, label: off === 0 ? pr.toFixed(0) + "%" : "", tip: (off === 0 ? "Exactly right" : Math.abs(off) + " hour" + (Math.abs(off) > 1 ? "s " : " ") + (off > 0 ? "late" : "early")) + ": " + pr.toFixed(1) + "%" });
   }
   barChart($("chartLab"), lab, { max: 20, ticks: [0, 5, 10, 15, 20] });
 
   var ali = [];
-  for (var g = 1; g <= 11; g++) {
-    var pa = (6 - Math.abs(g - 6)) / 36 * 100;
-    ali.push({ x: g * 5 + "m", value: pa, label: g === 6 ? pa.toFixed(0) + "%" : "", tip: "Crime " + g * 5 + " min after alibi: " + pa.toFixed(1) + "%" });
+  for (var g = 1; g <= 16; g++) {
+    var pa = E.gapChance(g) * 100;
+    ali.push({ x: g + "h", value: pa, label: g === 8 || g === 9 ? pa.toFixed(1) + "%" : "", tip: "Crime " + g + " hour" + (g > 1 ? "s" : "") + " after signing out: " + pa.toFixed(1) + "%" });
   }
   barChart($("chartAlibi"), ali, { max: 20, ticks: [0, 5, 10, 15, 20] });
 })();

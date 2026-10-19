@@ -38,22 +38,26 @@
     }
   ];
 
-  // Times are in five-minute steps within the hour of the crime.
-  var TIMES = ["On the hour", "Five after", "Ten after", "Quarter past", "Twenty after",
-               "Twenty-five after", "Half past", "Twenty-five til", "Twenty til",
-               "Quarter til", "Ten til", "Five til"];
-  var TIME_MINUTES = [":00", ":05", ":10", ":15", ":20", ":25", ":30", ":35", ":40", ":45", ":50", ":55"];
+  // Times are the 24 hours of the day. Index 0 is midnight, 12 is noon.
+  var HOURS = 24;
+  var TIMES = [], TIME_SHORT = [];
+  for (var h = 0; h < HOURS; h++) {
+    var twelve = h % 12 === 0 ? 12 : h % 12, half = h < 12 ? "AM" : "PM";
+    TIMES.push(h === 0 ? "Midnight" : h === 12 ? "Noon" : twelve + " " + half);
+    TIME_SHORT.push(twelve + " " + half);
+  }
 
   // The 49 likely suspects as [dress, studio, voice], in lineup order:
-  // one row per outfit, studio number increasing across each row.
+  // one row per voice, sorted by studio and then outfit across each row. Outfit, the easiest
+  // attribute to read from a picture, deliberately has nothing to do with position.
   var SUSPECTS = [
-    [0, 0, 1], [0, 2, 1], [0, 3, 3], [0, 4, 2], [0, 4, 4], [0, 5, 0], [0, 5, 2], [0, 6, 3],
-    [1, 0, 2], [1, 2, 4], [1, 2, 5], [1, 4, 3], [1, 5, 3], [1, 5, 6],
-    [2, 0, 2], [2, 3, 0], [2, 3, 1], [2, 3, 3], [2, 3, 6], [2, 6, 2], [2, 6, 5],
-    [3, 1, 0], [3, 2, 4], [3, 3, 4], [3, 4, 2], [3, 4, 4], [3, 4, 5], [3, 5, 2], [3, 5, 6],
-    [4, 0, 1], [4, 1, 5], [4, 2, 3], [4, 3, 0], [4, 5, 5],
-    [5, 1, 6], [5, 2, 0], [5, 2, 2], [5, 4, 3], [5, 6, 3], [5, 6, 5], [5, 6, 6],
-    [6, 0, 1], [6, 1, 1], [6, 1, 5], [6, 2, 3], [6, 3, 0], [6, 4, 6], [6, 5, 4], [6, 6, 4]
+    [3, 1, 0], [5, 2, 0], [2, 3, 0], [4, 3, 0], [6, 3, 0], [0, 5, 0],
+    [0, 0, 1], [4, 0, 1], [6, 0, 1], [6, 1, 1], [0, 2, 1], [2, 3, 1],
+    [1, 0, 2], [2, 0, 2], [5, 2, 2], [0, 4, 2], [3, 4, 2], [0, 5, 2], [3, 5, 2], [2, 6, 2],
+    [4, 2, 3], [6, 2, 3], [0, 3, 3], [2, 3, 3], [1, 4, 3], [5, 4, 3], [1, 5, 3], [0, 6, 3], [5, 6, 3],
+    [1, 2, 4], [3, 2, 4], [3, 3, 4], [0, 4, 4], [3, 4, 4], [6, 5, 4], [6, 6, 4],
+    [4, 1, 5], [6, 1, 5], [1, 2, 5], [3, 4, 5], [4, 5, 5], [2, 6, 5], [5, 6, 5],
+    [5, 1, 6], [2, 3, 6], [6, 4, 6], [1, 5, 6], [3, 5, 6], [5, 6, 6]
   ];
 
   var LOCATIONS = [
@@ -64,11 +68,11 @@
     { n: 3, key: "rodeo", name: "Rodeo Drive", category: 2,
       blurb: "The stars overheard the extras. They never looked, but they remember the voice." },
     { n: 4, key: "police", name: "Police Station", category: null,
-      blurb: "Get a time estimate from the crime lab. Alone? You may take an action card instead." },
+      blurb: "Get an estimate of the hour of death from the crime lab. Alone? You may take an action card instead." },
     { n: 5, key: "donut", name: "Donut Shop", category: null,
       blurb: "Compare notes with other detectives. Alone? Grab a Box of Donuts card to share later." },
     { n: 6, key: "prosecutor", name: "Prosecutor's Office", category: null,
-      blurb: "Make a press release, or name the perpetrator and take them to trial." }
+      blurb: "Make a press release, or name the perpetrator and take him or her to trial." }
   ];
 
   // Action cards. "when": "draw" = resolve as soon as drawn,
@@ -77,7 +81,7 @@
     donuts:     { name: "A Box of Donuts", when: "turn",
                   text: "Play on any turn after destinations are revealed. You may trade information with any detectives at your location." },
     peek:       { name: "Steal a Peek", when: "draw",
-                  text: "Play immediately against any other detective. They reveal two pieces of their information from last round." },
+                  text: "Play immediately against any other detective. He or she reveals two pieces of information gathered last round." },
     compliment: { name: "Compliment the Chief", when: "end",
                   text: "Keep this card. It is worth 2 points at the end of the game." },
     strongarm:  { name: "Strong-arm a Witness", when: "turn",
@@ -106,7 +110,7 @@
   }
 
   return {
-    CATEGORIES: CATEGORIES, TIMES: TIMES, TIME_MINUTES: TIME_MINUTES, SUSPECTS: SUSPECTS,
+    CATEGORIES: CATEGORIES, HOURS: HOURS, TIMES: TIMES, TIME_SHORT: TIME_SHORT, SUSPECTS: SUSPECTS,
     LOCATIONS: LOCATIONS, CARDS: CARDS, ACTION_DECK: ACTION_DECK, DONUT_DECK: DONUT_DECK,
     TURNS_PER_ROUND: TURNS_PER_ROUND, SCORING: SCORING, suspectLabel: suspectLabel
   };

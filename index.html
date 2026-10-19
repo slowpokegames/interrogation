@@ -32,7 +32,7 @@
   <section class="hero">
     <div class="kicker">A game of evidence, odds and nerve · 3–6 detectives · 45–90 min</div>
     <h1 class="neon flicker">Interrogation</h1>
-    <p class="type">Hollywood, 1983. A starlet is dead on the set of <i>Drowning in Space</i>. The witnesses can't agree, the crime lab can't tell time, and forty-nine people had access to the lot.</p>
+    <p class="type">Hollywood, 1983. A starlet is dead on the set of <i>Drowning in Space</i>. The witnesses can't agree, the crime lab can barely tell the hour, and forty-nine people had access to the lot.</p>
     <div class="ctas">
       <a class="btn primary block" href="play.html" id="play">Open the case</a>
       <div class="grid two" style="grid-template-columns:1fr 1fr">
@@ -52,6 +52,7 @@
     <div class="panel">
       <h3>What you need</h3>
       <p>One phone or tablet, passed around the table. That's it.</p>
+      <p>Short a detective or two? Fill any seat with an AI detective, play solo against them, or watch an all-AI case unfold.</p>
       <p class="muted">Optional: printed data sheets, the suspect lineup and location cards, plus one die per player if you'd rather pick destinations with dice.</p>
     </div>
   </section>
@@ -72,7 +73,7 @@
       return '<div class="panel place">' + Art.locationIcon(l.n) + "<b>" + l.n + ". " + l.name + "</b><small>" + l.blurb + "</small></div>";
     }).join("");
     try {
-      if (localStorage.getItem("interrogation.save.v1")) document.getElementById("play").textContent = "Resume the case";
+      if (localStorage.getItem("interrogation.save.v2")) document.getElementById("play").textContent = "Resume the case";
     } catch (e) { /* storage unavailable */ }
   })();
 </script>

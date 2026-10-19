@@ -23,5 +23,9 @@ test("every suspect gets a well-formed, uniquely-identified portrait", () => {
 test("icons exist for every attribute, location and time", () => {
   D.CATEGORIES.forEach((c, ci) => c.values.forEach((v, k) => assert.match(A.attributeIcon(ci, k), /^<svg/)));
   D.LOCATIONS.forEach(l => assert.match(A.locationIcon(l.n), /^<svg/));
-  for (let t = 0; t < 12; t++) assert.match(A.clock(t), /<line x1="32" y1="32"/);
+  for (let t = 0; t < 24; t++) {
+    const svg = A.clock(t);
+    assert.match(svg, /<line x1="32" y1="32"/);
+    assert.ok(svg.includes(t < 12 ? ">AM<" : ">PM<"));
+  }
 });

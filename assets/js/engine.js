@@ -23,7 +23,8 @@
   }
   function randInt(state, n) { return Math.floor(random(state) * n); }
   function d6(state) { return randInt(state, 6) + 1; }
-  function mod12(n) { return ((n % 12) + 12) % 12; }
+  // Hours wrap around the clock, past midnight into the next day.
+  function modDay(n) { return ((n % D.HOURS) + D.HOURS) % D.HOURS; }
 
   function shuffle(state, arr) {
     for (var i = arr.length - 1; i > 0; i--) {
@@ -43,10 +44,11 @@
 
   function newGame(names, options, seed) {
     var state = {
-      version: 1,
+      version: 2,
       seed: seed >>> 0,
       rng: seed >>> 0,
-      players: names.map(function (n) { return { name: n }; }),
+      // players: [{ name, ai }] where ai is a personality key or null for a person at the table.
+      players: names.map(function (n) { return typeof n === "string" ? { name: n, ai: null } : { name: n.name, ai: n.ai || null }; }),
       options: Object.assign({ pickMode: "phone", assist: false }, options || {}),
       round: 1,
       turn: 1,
@@ -58,17 +60,29 @@
       pressReleases: {},
       trials: [],
       eliminated: [],
-      over: false
+      over: false,
+      nextEv: 1
     };
     state.alibis = [];
-    for (var i = 0; i < D.SUSPECTS.length; i++) state.alibis.push(randInt(state, 12));
+    for (var i = 0; i < D.SUSPECTS.length; i++) state.alibis.push(randInt(state, D.HOURS));
     state.perp = randInt(state, D.SUSPECTS.length);
-    // The crime is never at the alibi time; it is most likely 30 minutes away.
-    state.crimeTime = mod12(state.alibis[state.perp] + d6(state) + d6(state) - 1);
+    // An alibi is the hour the gate log shows a suspect leaving the lot. The killer slipped
+    // back in 3d6 − 2 hours later: 1 to 16, most often 8 or 9.
+    state.crimeTime = modDay(state.alibis[state.perp] + d6(state) + d6(state) + d6(state) - 2);
     state.actionDeck = buildDeck(state, D.ACTION_DECK);
     state.donutDeck = buildDeck(state, D.DONUT_DECK);
     return state;
   }
+
+  // Chance the killer struck exactly g hours after signing out (3d6 − 2). Zero outside 1–16,
+  // so an alibi rules out the sign-out hour and the 7 hours before it.
+  var GAP = (function () {
+    var p = [];
+    for (var g = 0; g < 24; g++) p.push(0);
+    for (var a = 1; a <= 6; a++) for (var b = 1; b <= 6; b++) for (var c = 1; c <= 6; c++) p[a + b + c - 2] += 1 / 216;
+    return p;
+  })();
+  function gapChance(g) { return GAP[modDay(g)]; }
 
   function turnsPerRound(state) { return D.TURNS_PER_ROUND[state.players.length] || 3; }
 
@@ -85,16 +99,19 @@
     return v >= truth ? v + 1 : v;
   }
 
-  // Crime lab: the true time shifted by 2d6 − 7 steps (16.7% exact, 44% within 5 minutes).
-  function drawLab(state) { return mod12(state.crimeTime + d6(state) + d6(state) - 7); }
+  // Crime lab: the true hour shifted by 2d6 − 7 hours (16.7% exact, 44% within an hour).
+  function drawLab(state) { return modDay(state.crimeTime + d6(state) + d6(state) - 7); }
 
   function alibiOf(state, suspect) { return state.alibis[suspect]; }
 
   // ---------- notebooks ----------
 
-  // entry: { round, cat (0-2 attribute, 3 time), value, hand (1 first, 2 second), src }
+  // entry: { round, cat (0-2 attribute, 3 time), value, hand (1 first, 2 second), src, ev }.
+  // ev identifies one piece of evidence, so copies of the same report can be recognized.
+  function newEv(state) { return state.nextEv++; }
   function record(state, pi, entry) {
     var e = Object.assign({ round: state.round, hand: 1 }, entry);
+    if (e.ev == null) e.ev = newEv(state);
     state.notebooks[pi].push(e);
     return e;
   }
@@ -103,7 +120,8 @@
   // because the crime lab's accuracy never changes.
   function weightedTotals(state, pi) {
     var t = [0, 1, 2].map(function () { return [0, 0, 0, 0, 0, 0, 0]; });
-    var times = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+    var times = [];
+    for (var h = 0; h < D.HOURS; h++) times.push(0);
     state.notebooks[pi].forEach(function (e) {
       if (e.cat === TIME_CAT) times[e.value] += 1;
       else t[e.cat][e.value] += e.round;
@@ -128,7 +146,7 @@
     var pool = state.notebooks[target].filter(function (e) { return e.hand === 1 && e.round === from; });
     shuffle(state, pool);
     return pool.slice(0, 2).map(function (e) {
-      return record(state, thief, { round: e.round, cat: e.cat, value: e.value, hand: 2,
+      return record(state, thief, { round: e.round, cat: e.cat, value: e.value, hand: 2, ev: e.ev,
                                     src: state.players[target].name });
     });
   }
@@ -268,10 +286,10 @@
   }
 
   return {
-    TIME_CAT: TIME_CAT, random: random, randInt: randInt, d6: d6, mod12: mod12, shuffle: shuffle,
-    newGame: newGame, turnsPerRound: turnsPerRound, correctChance: correctChance,
+    TIME_CAT: TIME_CAT, random: random, randInt: randInt, d6: d6, modDay: modDay, shuffle: shuffle,
+    newGame: newGame, gapChance: gapChance, turnsPerRound: turnsPerRound, correctChance: correctChance,
     drawAttribute: drawAttribute, drawLab: drawLab, alibiOf: alibiOf,
-    record: record, weightedTotals: weightedTotals, suspectScores: suspectScores,
+    record: record, newEv: newEv, weightedTotals: weightedTotals, suspectScores: suspectScores,
     evidenceCount: evidenceCount, stealPeek: stealPeek, drawCard: drawCard, discard: discard,
     hunchRounds: hunchRounds, hunchValue: hunchValue, makeHunch: makeHunch,
     resolvePressReleases: resolvePressReleases, groupProsecutions: groupProsecutions,

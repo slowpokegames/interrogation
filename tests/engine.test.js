@@ -1,4 +1,4 @@
-// Run with: node --test tests/
+// Run with: npm test
 "use strict";
 const test = require("node:test");
 const assert = require("node:assert");
@@ -18,8 +18,9 @@ function near(actual, expected, tol, msg) { assert.ok(Math.abs(actual - expected
 test("suspect list matches the original game", () => {
   const key = s => s.join(",");
   assert.deepStrictEqual(D.SUSPECTS.map(key).sort(), ORIGINAL.map(key).sort());
-  // Lineup order: by outfit, then by studio.
-  for (let i = 1; i < D.SUSPECTS.length; i++) assert.ok(key(D.SUSPECTS[i - 1]) < key(D.SUSPECTS[i]));
+  // Lineup order: one row per voice, then by studio, then by outfit.
+  const order = s => [s[2], s[1], s[0]].join(",");
+  for (let i = 1; i < D.SUSPECTS.length; i++) assert.ok(order(D.SUSPECTS[i - 1]) < order(D.SUSPECTS[i]));
 });
 
 test("interrogations are right (round + 1) / 10 of the time, wrong answers uniform", () => {
@@ -34,23 +35,37 @@ test("interrogations are right (round + 1) / 10 of the time, wrong answers unifo
   assert.strictEqual(E.correctChance(9), 1);
 });
 
-test("crime lab matches the rulebook: 16.7% exact, 44% within five minutes, never 30 off", () => {
-  const s = game(), counts = Array(12).fill(0);
-  for (let i = 0; i < N; i++) counts[E.mod12(E.drawLab(s) - s.crimeTime)]++;
-  near(counts[0] / N, 6 / 36, 0.005, "exact");
-  near((counts[0] + counts[1] + counts[11]) / N, 16 / 36, 0.005, "within 5");
-  near(counts[5] / N, 1 / 36, 0.003, "25 late");
-  assert.strictEqual(counts[6], 0);
+test("the day has 24 hours, midnight to 11 PM", () => {
+  assert.strictEqual(D.HOURS, 24);
+  assert.deepStrictEqual([D.TIMES[0], D.TIMES[1], D.TIMES[12], D.TIMES[23]], ["Midnight", "1 AM", "Noon", "11 PM"]);
 });
 
-test("crime is never at the alibi time and most often 30 minutes away", () => {
-  const counts = Array(12).fill(0);
+test("crime lab matches the rulebook: 16.7% exact, 44% within an hour, never 6 or more hours off", () => {
+  const s = game(), counts = Array(24).fill(0);
+  for (let i = 0; i < N; i++) counts[E.modDay(E.drawLab(s) - s.crimeTime)]++;
+  near(counts[0] / N, 6 / 36, 0.005, "exact");
+  near((counts[0] + counts[1] + counts[23]) / N, 16 / 36, 0.005, "within 1");
+  near(counts[5] / N, 1 / 36, 0.003, "5 late");
+  for (let off = 6; off <= 18; off++) assert.strictEqual(counts[off], 0, `off by ${off}`);
+});
+
+test("crime is 1 to 16 hours after the alibi (3d6 − 2), most often 8 or 9, wrapping past midnight", () => {
+  const counts = Array(24).fill(0);
+  let wrapped = 0;
   for (let seed = 1; seed <= 20000; seed++) {
     const s = game(4, seed);
-    counts[E.mod12(s.crimeTime - s.alibis[s.perp])]++;
+    counts[E.modDay(s.crimeTime - s.alibis[s.perp])]++;
+    if (s.crimeTime < s.alibis[s.perp]) wrapped++;
+    assert.ok(s.alibis.every(a => a >= 0 && a < 24));
   }
   assert.strictEqual(counts[0], 0);
-  assert.strictEqual(counts.indexOf(Math.max(...counts)), 6);
+  for (let g = 17; g < 24; g++) assert.strictEqual(counts[g], 0);
+  assert.ok([8, 9].includes(counts.indexOf(Math.max(...counts))));
+  // An alibi rules out exactly 8 of the 24 hours.
+  assert.strictEqual(Array.from({ length: 24 }, (_, g) => E.gapChance(g)).filter(p => p === 0).length, 8);
+  near(E.gapChance(8), 27 / 216, 1e-12, "peak");
+  near(Array.from({ length: 24 }, (_, g) => E.gapChance(g)).reduce((a, b) => a + b, 0), 1, 1e-12, "sums to 1");
+  assert.ok(wrapped > 0, "some crimes happen after midnight");
 });
 
 test("same seed, same game", () => {

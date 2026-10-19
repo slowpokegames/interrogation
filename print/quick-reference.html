@@ -43,15 +43,15 @@
 
       <h3>Witness reliability</h3>
       <div class="rel" id="rel"></div>
-      <p class="small muted" style="margin:4px 0 0">Crime lab: exact 17% · within 5 min 44% · never 30 min off. Crime time is 5–55 min after the killer's alibi, usually 30.</p>
+      <p class="small muted" style="margin:4px 0 0">Crime lab: exact 17% · within an hour 44% · never 6+ hours off (the clock runs midnight to midnight). The killer struck 1–16 hours after signing out at the gate, usually 8–9. A crime at the sign-out hour or in the 7 hours before it clears the defendant.</p>
     </div>
     <div>
       <h3>Trial</h3>
       <ol>
-        <li>Prosecutors state their evidence and the time of the crime.</li>
-        <li>The app reveals the defendant's alibi.</li>
+        <li>Prosecutors state their evidence and the hour of the crime.</li>
+        <li>The app reveals the defendant's alibi: the hour he or she signed out.</li>
         <li>Everyone else votes Guilty or Not guilty in secret.</li>
-        <li>Check the suspect. Guilty ends the game; innocent clears them.</li>
+        <li>Check the suspect. Guilty ends the game; innocent clears the suspect.</li>
       </ol>
 
       <h3>Scoring</h3>
@@ -64,7 +64,7 @@
         <tr><td>Vote Not guilty</td><td class="n">+7</td><td class="n">−3</td></tr>
         <tr><td>Compliment the Chief, in hand</td><td class="n">+2</td><td class="n"></td></tr>
       </table>
-      <p class="small" style="margin:4px 0 0"><b>Passing a hunch</b> carries half the stake to the next one. <b>Joint prosecutors</b> split base points, rounding away from zero. <b>Ties</b> go to the most evidence.</p>
+      <p class="small" style="margin:4px 0 0"><b>Passing a hunch</b> carries half the stake to the next one. <b>Joint prosecutors</b> split base points, rounding away from zero. <b>Ties</b> go to the most evidence. <b>Trading:</b> no bluffing.</p>
 
       <h3>Action cards</h3>
       <div id="cards"></div>
@@ -84,7 +84,7 @@
     1: "Outfit report (shared if crowded).",
     2: "Studio report (shared if crowded).",
     3: "Voice report (shared if crowded).",
-    4: "Alone: crime lab or action card. Crowded: shared lab reading.",
+    4: "Alone: crime lab (hour of death) or action card. Crowded: shared lab reading.",
     5: "Announced openly. Alone: Box of Donuts. Crowded: trade.",
     6: "Press release, or name the perpetrator and go to trial."
   };
