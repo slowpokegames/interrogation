@@ -73,7 +73,7 @@
       return '<div class="panel place">' + Art.locationIcon(l.n) + "<b>" + l.n + ". " + l.name + "</b><small>" + l.blurb + "</small></div>";
     }).join("");
     try {
-      if (localStorage.getItem("interrogation.save.v2")) document.getElementById("play").textContent = "Resume the case";
+      if (localStorage.getItem("interrogation.save.v3")) document.getElementById("play").textContent = "Resume the case";
     } catch (e) { /* storage unavailable */ }
   })();
 </script>

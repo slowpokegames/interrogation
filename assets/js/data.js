@@ -99,8 +99,8 @@
   var SCORING = {
     hunchBase: { 2: 16, 3: 8, 4: 4, 5: 2, 6: 1 },   // hunch made after round N
     pressRelease: { right: 10, wrong: -5 },
-    prosecution: { guilty: 16, innocent: -12, perGuiltyVote: 1 },
-    vote: { guiltyIfGuilty: 6, guiltyIfInnocent: -4, notGuiltyIfGuilty: -3, notGuiltyIfInnocent: 7 },
+    prosecution: { guilty: 10, innocent: -8 },
+    vote: { guiltyIfGuilty: 6, guiltyIfInnocent: -4, notGuiltyIfGuilty: -4, notGuiltyIfInnocent: 4 },
     compliment: 2
   };
 

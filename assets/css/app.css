@@ -276,3 +276,5 @@ body.private .topbar { border-bottom-color: var(--pink); }
 .voice-head { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; font: 700 0.95rem var(--head); text-transform: uppercase; letter-spacing: 0.06em; color: var(--vc); }
 .voice-ic svg { width: 30px; display: block; }
 .voice-row .lineup { grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 8px; }
+.press-line { display: flex; align-items: center; gap: 6px; width: 100%; }
+.press-line .attr-ic svg { width: 26px; height: 26px; }

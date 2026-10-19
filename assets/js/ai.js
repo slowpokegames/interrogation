@@ -15,14 +15,14 @@
   // nameAt / pressAt / hunchAt / guiltyAt: how sure the detective must be to act.
   // give: pieces of evidence offered per trade; share: which ones ("best", "worst", "random").
   // social: chance of calling the Donut Shop; cardLove: taste for action cards;
-  // noise: how erratic location choices are; trust: how much a rival's press release is believed;
+  // noise: how erratic location choices are; trust: how often a rival's press release is believed to be right (about 1 in 3 really are);
   // crowd: how much being charged at all makes a defendant look guilty.
   var PERSONALITIES = {
     hothead: {
       name: "Vic Malone", alt: "Rocco Brandt", title: "The Hothead", pronoun: "he",
       blurb: "Kicks the door in first and checks the address later. He prosecutes early, votes Guilty easily and hates sitting still.",
-      nameAt: 0.32, pressAt: 0.34, hunchAt: 0.22, guiltyAt: 0.42,
-      give: 1, share: "random", social: 0.1, cardLove: 0.5, sirens: true, noise: 0.35, trust: 0.5, crowd: 2.2,
+      nameAt: 0.32, pressAt: 0.34, hunchAt: 0.22, guiltyAt: 0.31,
+      give: 1, share: "random", social: 0.1, cardLove: 0.5, sirens: true, noise: 0.35, trust: 0.4, crowd: 2.2,
       lines: {
         name: "{n} slams the file on the desk: “I don't need a lab report to know a killer when I see one.”",
         trade: "{n} drums his fingers: “Make it quick. I've got doors to kick.”"
@@ -31,8 +31,8 @@
     professor: {
       name: "Iris Kemp", alt: "Ada Whitfield", title: "The Professor", pronoun: "she",
       blurb: "Runs the numbers twice before she moves. Patient, accurate and stingy with her best notes. The toughest opponent.",
-      nameAt: 0.62, pressAt: 0.46, hunchAt: 0.4, guiltyAt: 0.55,
-      give: 2, share: "worst", social: 0.25, cardLove: 0.3, sirens: false, noise: 0.08, trust: 0.55, crowd: 1.2,
+      nameAt: 0.62, pressAt: 0.46, hunchAt: 0.4, guiltyAt: 0.44,
+      give: 2, share: "worst", social: 0.25, cardLove: 0.3, sirens: false, noise: 0.08, trust: 0.3, crowd: 1.2,
       lines: {
         name: "{n} adjusts her glasses: “The evidence is consistent with exactly one person, your honor.”",
         trade: "{n} opens a color-coded binder: “Shall we exchange data? Fair is fair.”"
@@ -41,8 +41,8 @@
     glory: {
       name: "Sal Romano", alt: "Chet Lawson", title: "The Glory Hound", pronoun: "he",
       blurb: "Lives for the front page. He rushes out press releases, loves Speed with Sirens and follows the crowd on the jury.",
-      nameAt: 0.5, pressAt: 0.3, hunchAt: 0.3, guiltyAt: 0.5, pressBonus: 0.8,
-      give: 1, share: "random", social: 0.15, cardLove: 0.6, sirens: true, noise: 0.2, trust: 0.6, crowd: 1.7,
+      nameAt: 0.5, pressAt: 0.3, hunchAt: 0.3, guiltyAt: 0.39, pressBonus: 0.8,
+      give: 1, share: "random", social: 0.15, cardLove: 0.6, sirens: true, noise: 0.2, trust: 0.45, crowd: 1.7,
       lines: {
         name: "{n} straightens his tie for the cameras: “Get my good side, boys. I'm about to close this case.”",
         trade: "{n} winks: “I'll tell you mine if you tell me yours. Off the record.”"
@@ -51,8 +51,8 @@
     donut: {
       name: "Dot Kowalski", alt: "Bea Pruitt", title: "The Donut Lover", pronoun: "she",
       blurb: "Never met a box of crullers she didn't share. She trades often and generously, and her tips are usually her best.",
-      nameAt: 0.55, pressAt: 0.4, hunchAt: 0.35, guiltyAt: 0.55,
-      give: 3, share: "best", social: 0.55, cardLove: 0.4, sirens: false, noise: 0.25, trust: 0.6, crowd: 1.4,
+      nameAt: 0.55, pressAt: 0.4, hunchAt: 0.35, guiltyAt: 0.44,
+      give: 3, share: "best", social: 0.55, cardLove: 0.4, sirens: false, noise: 0.25, trust: 0.35, crowd: 1.4,
       lines: {
         name: "{n} brushes powdered sugar off the case file: “Hon, I'm pretty sure it's this one.”",
         trade: "{n} slides the box across: “Grab a cruller. Now, what've you got?”"
@@ -89,9 +89,13 @@
     unique(state.notebooks[pi]).forEach(function (e) {
       if (e.cat < 3) evidence(e.cat, e.value, Math.min(0.985, E.correctChance(e.round)));
     });
-    Object.keys(state.pressReleases).forEach(function (c) {
-      var r = state.pressReleases[c];
-      if (r.by.indexOf(pi) < 0) evidence(Number(c), r.value, P.trust);
+    // Rivals' press releases count as evidence, once per attribute value (copies add nothing new).
+    var heard = {};
+    state.pressReleases.forEach(function (r) {
+      var key = r.cat + ":" + r.value;
+      if (r.by.indexOf(pi) >= 0 || heard[key]) return;
+      heard[key] = true;
+      evidence(r.cat, r.value, P.trust);
     });
     var max = Math.max.apply(null, lw);
     if (max === -Infinity) return lw.map(function () { return 1 / lw.length; });
@@ -155,7 +159,7 @@
 
   // ---------- decisions ----------
 
-  function openCategories(state) { return [0, 1, 2].filter(function (c) { return !state.pressReleases[c]; }); }
+  function openCategories(state, pi) { return [0, 1, 2].filter(function (c) { return E.canRelease(state, pi, c); }); }
 
   function topSuspect(state, pi) {
     var post = posterior(state, pi), i = best(post);
@@ -164,7 +168,7 @@
 
   function bestPress(state, pi, post) {
     var m = marginals(post), out = null;
-    openCategories(state).forEach(function (c) {
+    openCategories(state, pi).forEach(function (c) {
       var v = best(m[c]);
       if (!out || m[c][v] > out.p) out = { cat: c, value: v, p: m[c][v] };
     });
@@ -177,7 +181,9 @@
     if (top.p >= P.nameAt || !press) return { kind: "name", suspect: top.suspect };
     if (press.p >= P.pressAt) return { kind: "press", cat: press.cat, value: press.value };
     // Nothing clears the bar: take whichever has the better expected payoff.
-    var evPress = 15 * press.p - 5, evName = 28 * top.p - 12;
+    var P2 = D.SCORING;
+    var evPress = (P2.pressRelease.right - P2.pressRelease.wrong) * press.p + P2.pressRelease.wrong;
+    var evName = (P2.prosecution.guilty - P2.prosecution.innocent) * top.p + P2.prosecution.innocent;
     return evName > evPress ? { kind: "name", suspect: top.suspect } : { kind: "press", cat: press.cat, value: press.value };
   }
 

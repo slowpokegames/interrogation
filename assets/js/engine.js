@@ -44,7 +44,7 @@
 
   function newGame(names, options, seed) {
     var state = {
-      version: 2,
+      version: 3,
       seed: seed >>> 0,
       rng: seed >>> 0,
       // players: [{ name, ai }] where ai is a personality key or null for a person at the table.
@@ -57,7 +57,7 @@
       notebooks: names.map(function () { return []; }),
       hands: names.map(function () { return []; }),
       hunches: names.map(function () { return { carry: 0, made: {} }; }),
-      pressReleases: {},
+      pressReleases: [],   // [{ cat, value, by: [pi], round, turn }]
       trials: [],
       eliminated: [],
       over: false,
@@ -184,24 +184,24 @@
 
   // ---------- press releases ----------
 
-  // subs: [{ pi, cat, value }]. Same claim → joint release. Conflicting values in a
-  // category → no release there. Each category can be released only once per game.
+  // Each detective may release each attribute once per game, no matter what others have
+  // announced, so there is no race to be first. subs: [{ pi, cat, value }]. Detectives who
+  // announce the same value in the same turn share one joint headline.
+  function canRelease(state, pi, cat) {
+    return !state.pressReleases.some(function (r) { return r.cat === cat && r.by.indexOf(pi) >= 0; });
+  }
   function resolvePressReleases(state, subs) {
-    var byCat = {};
-    subs.forEach(function (s) { (byCat[s.cat] = byCat[s.cat] || []).push(s); });
     var made = [], blocked = [];
-    Object.keys(byCat).forEach(function (c) {
-      var list = byCat[c], cat = Number(c);
-      if (state.pressReleases[cat]) { blocked.push({ cat: cat, by: list.map(pis), reason: "taken" }); return; }
-      var same = list.every(function (s) { return s.value === list[0].value; });
-      if (!same) { blocked.push({ cat: cat, by: list.map(pis), reason: "conflict" }); return; }
-      var rel = { cat: cat, value: list[0].value, by: list.map(pis), round: state.round };
-      state.pressReleases[cat] = rel;
+    subs.forEach(function (s) {
+      if (!canRelease(state, s.pi, s.cat)) { blocked.push({ cat: s.cat, by: [s.pi], reason: "taken" }); return; }
+      var joint = made.filter(function (r) { return r.cat === s.cat && r.value === s.value; })[0];
+      if (joint) { joint.by.push(s.pi); return; }
+      var rel = { cat: s.cat, value: s.value, by: [s.pi], round: state.round, turn: state.turn };
+      state.pressReleases.push(rel);
       made.push(rel);
     });
     return { made: made, blocked: blocked };
   }
-  function pis(s) { return s.pi; }
 
   // ---------- trials ----------
 
@@ -221,11 +221,10 @@
   // votes: { pi: true (guilty) | false (not guilty) } from the non-prosecutors.
   function runTrial(state, suspect, prosecutors, votes, claimedTime) {
     var S = D.SCORING, guilty = suspect === state.perp;
-    var guiltyVotes = Object.keys(votes).filter(function (k) { return votes[k]; }).length;
     var points = {};
     prosecutors.forEach(function (pi) {
       var base = guilty ? S.prosecution.guilty : S.prosecution.innocent;
-      points[pi] = awayFromZero(base / prosecutors.length) + guiltyVotes * S.prosecution.perGuiltyVote;
+      points[pi] = awayFromZero(base / prosecutors.length);
     });
     Object.keys(votes).forEach(function (pi) {
       var v = votes[pi];
@@ -264,8 +263,7 @@
         if (h.suspect === state.perp) hunch += h.value;
       });
       var press = 0;
-      Object.keys(state.pressReleases).forEach(function (c) {
-        var rel = state.pressReleases[c];
+      state.pressReleases.forEach(function (rel) {
         if (rel.by.indexOf(pi) >= 0)
           press += rel.value === D.SUSPECTS[state.perp][rel.cat] ? S.pressRelease.right : S.pressRelease.wrong;
       });
@@ -292,7 +290,7 @@
     record: record, newEv: newEv, weightedTotals: weightedTotals, suspectScores: suspectScores,
     evidenceCount: evidenceCount, stealPeek: stealPeek, drawCard: drawCard, discard: discard,
     hunchRounds: hunchRounds, hunchValue: hunchValue, makeHunch: makeHunch,
-    resolvePressReleases: resolvePressReleases, groupProsecutions: groupProsecutions,
+    canRelease: canRelease, resolvePressReleases: resolvePressReleases, groupProsecutions: groupProsecutions,
     awayFromZero: awayFromZero, runTrial: runTrial, endTurn: endTurn, finalScores: finalScores
   };
 });

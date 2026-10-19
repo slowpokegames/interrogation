@@ -178,16 +178,16 @@
           <thead><tr><th>Action</th><th class="n">Right</th><th class="n">Wrong</th><th>Notes</th></tr></thead>
           <tbody>
             <tr><td>Hunch</td><td class="n">16 / 8 / 4 / 2 / 1</td><td class="n">0</td><td>Plus carried points. See <a href="#round">End of a round</a>.</td></tr>
-            <tr><td>Press release</td><td class="n">+10</td><td class="n">−5</td><td>Joint releases score the same for each detective.</td></tr>
-            <tr><td>Prosecution</td><td class="n">+16</td><td class="n">−12</td><td>Plus 1 per Guilty vote. Joint prosecutors split the base points evenly, rounding away from zero; each still gets +1 per Guilty vote.</td></tr>
+            <tr><td>Press release</td><td class="n">+10</td><td class="n">−5</td><td>Each detective may release each attribute once. Joint releases score the same for each detective.</td></tr>
+            <tr><td>Prosecution</td><td class="n">+10</td><td class="n">−8</td><td>Joint prosecutors split the points evenly, rounding away from zero.</td></tr>
             <tr><td>Vote Guilty</td><td class="n">+6</td><td class="n">−4</td><td>“Right” means the defendant really did it.</td></tr>
-            <tr><td>Vote Not guilty</td><td class="n">+7</td><td class="n">−3</td><td>“Right” means the defendant is innocent.</td></tr>
+            <tr><td>Vote Not guilty</td><td class="n">+4</td><td class="n">−4</td><td>“Right” means the defendant is innocent.</td></tr>
             <tr><td>Compliment the Chief</td><td class="n">+2</td><td class="n">—</td><td>Scored if still in hand at the end.</td></tr>
           </tbody>
         </table>
         <p style="margin-top:12px">Ties go to the detective with the most evidence gathered, first- and second-hand.</p>
         <div class="panel callout cyan">
-          <b>When is it worth it?</b> The payoffs tell you how sure you need to be. A press release pays off when you're more than <b>33%</b> sure, a prosecution above about <b>43%</b>, and a Guilty vote above <b>55%</b>, a built-in presumption of innocence.
+          <b>When is it worth it?</b> The payoffs tell you how sure you need to be. A press release pays off when you're more than <b>33%</b> sure, and both a prosecution and a Guilty vote above <b>44%</b>. Solving the case matters, but it isn't everything: steady, accurate press releases and well-judged votes can outscore the detective who makes the arrest.
         </div>
       </section>
 
@@ -243,7 +243,7 @@
             <tr><th>Steal a Peek</th><td>In round 1 there is no “last round”, so it reveals information from the current round so far.</td></tr>
             <tr><th>Strong-arm &amp; Sirens</th><td>These affect information-giving locations: the Diner, the Studio, Rodeo Drive and the crime lab.</td></tr>
             <tr><th>Work During Lunch</th><td>Joining a location that already resolved this turn gives you the same information its visitors got. If nobody was there, you interview fresh.</td></tr>
-            <tr><th>Press releases</th><td>At most one per category per game, three in total. Conflicting releases in the same category cancel each other.</td></tr>
+            <tr><th>Press releases</th><td>Each detective may release each attribute (outfit, studio, voice) once per game, so at most three each. Others' releases don't block yours: you may agree with an earlier release, or contradict it, and each release is scored on its own. There's no prize for being first, only for being right.</td></tr>
             <tr><th>Phone etiquette</th><td>When the phone says it's someone's private screen, everyone else looks away. The case log records every public action, so mistakes are easy to spot.</td></tr>
           </tbody>
         </table>
@@ -273,7 +273,7 @@
     3: "One report on the killer's voice, shared by everyone there.",
     4: "Alone? Choose: a crime lab estimate of the hour of death, or draw an action card. With company, everyone gets the same crime lab reading.",
     5: "Alone? Take a Box of Donuts card. With company, negotiate and trade information. Record what you receive in your notebook.",
-    6: "Alone? Choose: issue a press release (announce one attribute you believe the killer has) or name the perpetrator and go to trial. With company, everyone secretly declares which. Matching press releases are made jointly; conflicting ones in the same category are cancelled. Then any trials are held."
+    6: "Alone? Choose: issue a press release (announce one attribute you believe the killer has) or name the perpetrator and go to trial. With company, everyone secretly declares which. Matching press releases are made jointly; different ones are each published and scored on their own. Then any trials are held."
   };
   $("locList").innerHTML = D.LOCATIONS.map(function (l) {
     return '<div class="panel loc">' + A.locationIcon(l.n) + "<div><h3>" + l.n + ". " + l.name + '</h3><p class="muted">' + l.blurb + "</p><p>" + detail[l.n] + "</p></div></div>";

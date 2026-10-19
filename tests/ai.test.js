@@ -58,7 +58,7 @@ test("decisions are legal for every personality", () => {
       assert.ok([1, 2, 3, 4, 6].includes(AI.chooseDestination(s, pi)));
       const c = AI.prosecutorChoice(s, pi);
       if (c.kind === "name") assert.ok(c.suspect >= 0 && c.suspect < 49 && !s.eliminated.includes(c.suspect));
-      else assert.ok(c.cat >= 0 && c.cat < 3 && !s.pressReleases[c.cat]);
+      else assert.ok(c.cat >= 0 && c.cat < 3 && E.canRelease(s, pi, c.cat));
       const h = AI.hunch(s, pi, 6);
       assert.ok(h !== null, "the last hunch is always taken");
       assert.ok([1, 2, 3].includes(AI.lunchJoin(s, pi)));

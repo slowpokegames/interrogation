@@ -9,7 +9,7 @@
   "use strict";
 
   var D = window.GameData, E = window.Engine, A = window.Art, AI = window.AI;
-  var SAVE_KEY = "interrogation.save.v2";
+  var SAVE_KEY = "interrogation.save.v3";
   var S = null;        // the saved game state
   var view = null;     // overlay: null | "lineup" | "log" | "menu" | "notebooks" | "confirm-new" | "confirm-end"
   var app = document.getElementById("app");
@@ -662,7 +662,7 @@
 
   // ---------- prosecutor's office ----------
 
-  function openCategories() { return [0, 1, 2].filter(function (c) { return !S.pressReleases[c]; }); }
+  function openCategories(pi) { return [0, 1, 2].filter(function (c) { return E.canRelease(S, pi, c); }); }
 
   H.prosecutor = {
     who: function (t) { return [t.pi]; },
@@ -680,12 +680,12 @@
         '<p class="muted">Belief: <b>' + pct(m) + "</b></p>";
     },
     render: function (t) {
-      var open = openCategories();
+      var open = openCategories(t.pi);
       if (!t.kind) {
         return '<section class="screen"><h2>Prosecutor\'s Office</h2><p class="muted">Choose one, in secret:</p><div class="grid two">' +
           '<button class="choice" data-act="kind" data-arg="press"' + (open.length ? "" : " disabled") + ">" + A.locationIcon(6) +
-          "<b>Press Release</b><small>" + (open.length ? "Announce one attribute of the killer. +10 if right, −5 if wrong." : "All three press releases have been made.") + "</small></button>" +
-          '<button class="choice" data-act="kind" data-arg="name">' + A.locationIcon(4) + "<b>Name the Perpetrator</b><small>Take a suspect to trial. +16 if guilty, −12 if innocent.</small></button></div>" + "</section>";
+          "<b>Press Release</b><small>" + (open.length ? "Announce one attribute of the killer. +10 if right, −5 if wrong. Anyone may release the same attribute; you get one per attribute." : "You've made all three of your press releases.") + "</small></button>" +
+          '<button class="choice" data-act="kind" data-arg="name">' + A.locationIcon(4) + "<b>Name the Perpetrator</b><small>Take a suspect to trial. +10 if guilty, −8 if innocent.</small></button></div>" + "</section>";
       }
       if (t.kind === "press") {
         var cats = open.map(function (c) {
@@ -746,7 +746,7 @@
       }).join("");
       var blocked = t.press.blocked.map(function (b) {
         return '<p class="muted">' + names(b.by) + ": no " + esc(D.CATEGORIES[b.cat].name.toLowerCase()) + " press release " +
-          (b.reason === "taken" ? "(already released this game)." : "(the detectives disagreed).") + "</p>";
+          "(already made one this game)." + "</p>";
       }).join("");
       return '<section class="screen"><h2>Press releases</h2>' + made + blocked +
         btn("go", t.trials.length ? "On to the trial" : "Continue", "primary block") + "</section>";
@@ -831,7 +831,7 @@
     render: function (t) {
       var tr = S.flow.trial;
       return '<section class="screen"><h2>Your vote, ' + name(t.pi) + "</h2>" + suspectHero(tr.suspect, "The defendant") +
-        '<p class="muted small">Guilty: +6 if the defendant did it, −4 if not. Not guilty: −3 if the defendant did it, +7 if not.</p>' +
+        '<p class="muted small">Guilty: +6 if the defendant did it, −4 if not. Not guilty: −4 if the defendant did it, +4 if not.</p>' +
         '<div class="grid two">' + btn("cast", "Guilty", "primary", "1") + btn("cast", "Not guilty", "", "0") + "</div></section>";
     },
     act: { cast: function (t, arg) { S.flow.trial.votes[t.pi] = arg === "1"; done(); } }
@@ -1134,10 +1134,11 @@
     var body = "";
     if (view === "lineup") {
       var pr = [0, 1, 2].map(function (c) {
-        var r = S.pressReleases[c];
+        var rs = S.pressReleases.filter(function (r) { return r.cat === c; });
         return '<div class="press-mini"><span class="kicker">' + esc(D.CATEGORIES[c].name) + "</span>" +
-          (r ? '<span class="attr-ic">' + A.attributeIcon(c, r.value) + "</span><b>" + attrName(c, r.value) + '</b><span class="muted small">by ' + names(r.by) + "</span>"
-             : '<span class="muted">No release yet</span>') + "</div>";
+          (rs.length ? rs.map(function (r) {
+            return '<div class="press-line"><span class="attr-ic">' + A.attributeIcon(c, r.value) + "</span><b>" + attrName(c, r.value) + '</b> <span class="muted small">' + names(r.by) + " · R" + r.round + "</span></div>";
+          }).join("") : '<span class="muted">No release yet</span>') + "</div>";
       }).join("");
       body = "<h2>The lineup</h2><div class=\"press-row\">" + pr + "</div>" + suspectGrid({});
     } else if (view === "log") {
@@ -1236,7 +1237,7 @@
   // ---------- boot ----------
 
   S = load();
-  if (S && (!S.flow || !S.flow.tasks || !S.flow.tasks.length || S.version !== 2)) S = null;
+  if (S && (!S.flow || !S.flow.tasks || !S.flow.tasks.length || S.version !== 3)) S = null;
   // Never resume straight onto someone's private screen.
   if (S) { S.flow.tasks.forEach(function (t) { t.open = false; }); settle(); }
   render();

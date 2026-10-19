@@ -111,36 +111,45 @@ test("hunches: passing carries half the stake", () => {
   assert.strictEqual(E.hunchValue(s, 2, 4), 4);
 });
 
-test("press releases: joint, conflicting, and once per category", () => {
+test("press releases: one per detective per attribute, no race, joint when they match", () => {
   const s = game();
   let r = E.resolvePressReleases(s, [{ pi: 0, cat: 0, value: 2 }, { pi: 1, cat: 0, value: 2 },
                                      { pi: 2, cat: 1, value: 3 }, { pi: 3, cat: 1, value: 4 }]);
-  assert.deepStrictEqual(r.made.map(m => m.by), [[0, 1]]);
-  assert.deepStrictEqual(r.blocked.map(b => b.reason), ["conflict"]);
-  r = E.resolvePressReleases(s, [{ pi: 2, cat: 0, value: 5 }]);
-  assert.deepStrictEqual(r.blocked.map(b => b.reason), ["taken"]);
+  assert.deepStrictEqual(r.made.map(m => [m.cat, m.value, m.by]), [[0, 2, [0, 1]], [1, 3, [2]], [1, 4, [3]]]);
+  assert.deepStrictEqual(r.blocked, []);
+  // Someone else's release doesn't block yours, but your own does.
+  r = E.resolvePressReleases(s, [{ pi: 2, cat: 0, value: 5 }, { pi: 0, cat: 0, value: 6 }]);
+  assert.deepStrictEqual(r.made.map(m => m.by), [[2]]);
+  assert.deepStrictEqual(r.blocked.map(b => [b.by, b.reason]), [[[0], "taken"]]);
+  // Each release is scored on its own.
+  const truth = D.SUSPECTS[s.perp][1];
+  const f = E.finalScores(s).rows;
+  assert.strictEqual(f[2].press, (truth === 3 ? 10 : -5) + (D.SUSPECTS[s.perp][0] === 5 ? 10 : -5));
 });
 
 test("trial scoring, including joint prosecution rounding away from zero", () => {
   const s = game(6);
   const innocent = (s.perp + 1) % 49;
   let t = E.runTrial(s, innocent, [0, 1, 2], { 3: true, 4: false, 5: true });
-  assert.deepStrictEqual(t.points, { 0: -2, 1: -2, 2: -2, 3: -4, 4: 7, 5: -4 }); // −12/3 = −4, +2 votes
+  assert.deepStrictEqual(t.points, { 0: -3, 1: -3, 2: -3, 3: -4, 4: 4, 5: -4 }); // −8/3 → −3
   assert.ok(s.eliminated.includes(innocent) && !s.over);
   t = E.runTrial(s, s.perp, [0, 1, 2], { 3: true, 4: false, 5: false });
-  assert.deepStrictEqual(t.points, { 0: 7, 1: 7, 2: 7, 3: 6, 4: -3, 5: -3 }); // 16/3 → 6, +1 vote
+  assert.deepStrictEqual(t.points, { 0: 4, 1: 4, 2: 4, 3: 6, 4: -4, 5: -4 }); // 10/3 → 4; no bonus for Guilty votes
   assert.ok(s.over);
 });
 
 test("final scores add up and break ties on evidence", () => {
   const s = game(3);
-  s.pressReleases[0] = { cat: 0, value: D.SUSPECTS[s.perp][0], by: [0] };
-  s.hands[1].push("compliment", "compliment");
+  // A joint, correct press release: +10 each. A Compliment the Chief adds 2.
+  s.pressReleases.push({ cat: 0, value: D.SUSPECTS[s.perp][0], by: [0, 1] });
+  s.hands[1].push("compliment");
   E.record(s, 1, { cat: 0, value: 0 });
   E.record(s, 0, { cat: 0, value: 0 }); E.record(s, 0, { cat: 0, value: 1 });
-  s.hands[1].push("compliment", "compliment", "compliment");
-  const f = E.finalScores(s);
+  let f = E.finalScores(s);
   assert.strictEqual(f.rows[0].total, 10);
+  assert.strictEqual(f.rows[1].total, 12);
+  s.hands[1].pop();
+  f = E.finalScores(s);
   assert.strictEqual(f.rows[1].total, 10);
   assert.strictEqual(f.ranked[0].pi, 0); // tie on points, more evidence wins
 });
