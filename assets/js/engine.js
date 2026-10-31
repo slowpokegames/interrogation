@@ -49,7 +49,7 @@
       rng: seed >>> 0,
       // players: [{ name, ai }] where ai is a personality key or null for a person at the table.
       players: names.map(function (n) { return typeof n === "string" ? { name: n, ai: null } : { name: n.name, ai: n.ai || null }; }),
-      options: Object.assign({ pickMode: "phone", assist: false }, options || {}),
+      options: Object.assign({ pickMode: "phone", assist: false, ramp: { start: D.RAMP.start, step: D.RAMP.step } }, options || {}),
       round: 1,
       turn: 1,
       lead: 0,
@@ -88,13 +88,30 @@
 
   // ---------- evidence ----------
 
-  // Chance an interrogation gives the true attribute: 20% in round 1, +10% per round.
+  // Chance an interrogation gives the true attribute in the standard game: 20% in round 1, +10% per round.
   function correctChance(round) { return Math.min(1, (round + 1) / 10); }
+
+  // The same, for this game's witness reliability setting (see GameData.RAMP).
+  function reliability(state, round) {
+    var r = (state && state.options && state.options.ramp) || D.RAMP;
+    var p = Math.round((r.start + r.step * (round - 1)) * 1000) / 1000;
+    return Math.min(1, Math.max(D.RAMP.floor, p));
+  }
+
+  // How much a mark from a given round counts on the data sheet: 10 × reliability − 1.
+  // In the standard game that is simply the round number (20% → 1, 30% → 2, …, 100% → 9),
+  // and it tracks the true statistical weight of a report closely.
+  function roundWeight(state, round) { return Math.max(1, Math.round(10 * reliability(state, round) - 1)); }
+
+  function isStandardRamp(state) {
+    var r = (state && state.options && state.options.ramp) || D.RAMP;
+    return r.start === D.RAMP.start && r.step === D.RAMP.step;
+  }
 
   // One interrogation result. When wrong, any of the six wrong values is equally likely.
   function drawAttribute(state, cat) {
     var truth = D.SUSPECTS[state.perp][cat];
-    if (random(state) < correctChance(state.round)) return truth;
+    if (random(state) < reliability(state, state.round)) return truth;
     var v = randInt(state, 6);
     return v >= truth ? v + 1 : v;
   }
@@ -116,7 +133,7 @@
     return e;
   }
 
-  // The data-sheet rule: each mark is worth its round number. Lab times are not weighted
+  // The data-sheet rule: each mark is worth its round's weight (normally the round number). Lab times are not weighted
   // because the crime lab's accuracy never changes.
   function weightedTotals(state, pi) {
     var t = [0, 1, 2].map(function () { return [0, 0, 0, 0, 0, 0, 0]; });
@@ -124,7 +141,7 @@
     for (var h = 0; h < D.HOURS; h++) times.push(0);
     state.notebooks[pi].forEach(function (e) {
       if (e.cat === TIME_CAT) times[e.value] += 1;
-      else t[e.cat][e.value] += e.round;
+      else t[e.cat][e.value] += roundWeight(state, e.round);
     });
     return { attrs: t, times: times };
   }
@@ -286,6 +303,7 @@
   return {
     TIME_CAT: TIME_CAT, random: random, randInt: randInt, d6: d6, modDay: modDay, shuffle: shuffle,
     newGame: newGame, gapChance: gapChance, turnsPerRound: turnsPerRound, correctChance: correctChance,
+    reliability: reliability, roundWeight: roundWeight, isStandardRamp: isStandardRamp,
     drawAttribute: drawAttribute, drawLab: drawLab, alibiOf: alibiOf,
     record: record, newEv: newEv, weightedTotals: weightedTotals, suspectScores: suspectScores,
     evidenceCount: evidenceCount, stealPeek: stealPeek, drawCard: drawCard, discard: discard,

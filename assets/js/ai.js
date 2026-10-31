@@ -87,7 +87,7 @@
       D.SUSPECTS.forEach(function (s, i) { lw[i] += s[cat] === value ? hit : miss; });
     }
     unique(state.notebooks[pi]).forEach(function (e) {
-      if (e.cat < 3) evidence(e.cat, e.value, Math.min(0.985, E.correctChance(e.round)));
+      if (e.cat < 3) evidence(e.cat, e.value, Math.min(0.985, E.reliability(state, e.round)));
     });
     // Rivals' press releases count as evidence, once per attribute value (copies add nothing new).
     var heard = {};
@@ -190,7 +190,7 @@
   // Where to go this turn: 1, 2, 3, 4 or 6 (the Donut Shop is only ever called openly).
   function chooseDestination(state, pi) {
     var P = pers(state, pi), top = topSuspect(state, pi), m = marginals(top.post);
-    var reliability = E.correctChance(state.round), score = {};
+    var reliability = E.reliability(state, state.round), score = {};
     for (var c = 0; c < 3; c++) score[c + 1] = entropy(m[c]) / Math.log(7) * (0.4 + reliability);
     var labs = labReadings(state, pi).length;
     score[4] = 0.3 * (labs < 2 ? 1 : 0.35) + (state.actionDeck.length ? 0.3 * P.cardLove : 0);
@@ -201,6 +201,25 @@
     var pick = 1, bestScore = -Infinity;
     [1, 2, 3, 4, 6].forEach(function (n) {
       var s = score[n] + P.noise * gumbel(state);
+      if (s > bestScore) { bestScore = s; pick = n; }
+    });
+    return pick;
+  }
+
+  // The evidence location (1-4) with the most to teach this detective, from his or her own notes.
+  // Used by "Investigate for me" and by fast-forwarding a round, for people and AIs alike.
+  // taken: locations already chosen by others this turn; sharing one wastes a visit.
+  function scout(state, pi, taken) {
+    taken = taken || [];
+    // Witnesses get more reliable each round, but the crime lab never does, so the lab is
+    // relatively more worthwhile early on.
+    var m = marginals(posterior(state, pi)), score = {}, reliability = E.reliability(state, state.round);
+    for (var c = 0; c < 3; c++) score[c + 1] = entropy(m[c]) / Math.log(7) * (0.3 + reliability);
+    var labs = labReadings(state, pi).length;
+    score[4] = labs < 2 ? 0.55 : labs < 4 ? 0.3 : 0.1;
+    var pick = 1, bestScore = -Infinity;
+    [1, 2, 3, 4].forEach(function (n) {
+      var s = score[n] - (taken.indexOf(n) >= 0 ? 0.6 : 0) + rand(state) * 0.05;
       if (s > bestScore) { bestScore = s; pick = n; }
     });
     return pick;
@@ -317,7 +336,7 @@
     return [0, 1, 2].map(function (c) {
       var v = D.SUSPECTS[suspect][c], count = 0, score = 0;
       unique(state.notebooks[pi]).forEach(function (e) {
-        if (e.cat === c && e.value === v) { count++; score += e.round; }
+        if (e.cat === c && e.value === v) { count++; score += E.roundWeight(state, e.round); }
       });
       return { cat: c, value: v, count: count, score: score };
     });
@@ -332,7 +351,7 @@
     line: line,
     PERSONALITIES: PERSONALITIES, ORDER: ORDER, isAI: isAI,
     posterior: posterior, marginals: marginals, timePosterior: timePosterior, pGuilty: pGuilty,
-    chooseDestination: chooseDestination, wantsDonuts: wantsDonuts, cardToPlay: cardToPlay,
+    chooseDestination: chooseDestination, scout: scout, wantsDonuts: wantsDonuts, cardToPlay: cardToPlay,
     policeChoice: policeChoice, peekTarget: peekTarget, lunchJoin: lunchJoin,
     prosecutorChoice: prosecutorChoice, claimTime: claimTime, vote: vote, hunch: hunch,
     chooseGive: chooseGive, markGiven: markGiven, receive: receive, swap: swap, caseFor: caseFor

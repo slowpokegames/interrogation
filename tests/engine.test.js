@@ -68,6 +68,25 @@ test("crime is 1 to 16 hours after the alibi (3d6 − 2), most often 8 or 9, wra
   assert.ok(wrapped > 0, "some crimes happen after midnight");
 });
 
+test("witness reliability ramps: standard by default, custom when chosen, weights follow reliability", () => {
+  const std = game();
+  for (let r = 1; r <= 12; r++) {
+    assert.strictEqual(E.reliability(std, r), E.correctChance(r));
+    assert.strictEqual(E.roundWeight(std, r), Math.min(r, 9)); // the data sheet's round-number rule
+  }
+  assert.ok(E.isStandardRamp(std));
+  const fading = E.newGame(["A", "B", "C"], { ramp: { start: 0.8, step: -0.1 } }, 1);
+  assert.deepStrictEqual([1, 2, 7, 8, 12].map(r => E.reliability(fading, r)), [0.8, 0.7, 0.2, 0.15, 0.15]);
+  assert.deepStrictEqual([1, 2, 7, 8].map(r => E.roundWeight(fading, r)), [7, 6, 1, 1]);
+  assert.ok(!E.isStandardRamp(fading));
+  // Interrogations really follow the chosen ramp.
+  const head = E.newGame(["A", "B", "C"], { ramp: { start: 0.3, step: 0.1 } }, 2);
+  const truth = D.SUSPECTS[head.perp][2];
+  let right = 0;
+  for (let i = 0; i < N; i++) if (E.drawAttribute(head, 2) === truth) right++;
+  near(right / N, 0.3, 0.005, "head start round 1");
+});
+
 test("same seed, same game", () => {
   const a = game(4, 99), b = game(4, 99);
   assert.deepStrictEqual(a, b);
@@ -131,10 +150,10 @@ test("trial scoring, including joint prosecution rounding away from zero", () =>
   const s = game(6);
   const innocent = (s.perp + 1) % 49;
   let t = E.runTrial(s, innocent, [0, 1, 2], { 3: true, 4: false, 5: true });
-  assert.deepStrictEqual(t.points, { 0: -3, 1: -3, 2: -3, 3: -4, 4: 4, 5: -4 }); // −8/3 → −3
+  assert.deepStrictEqual(t.points, { 0: -4, 1: -4, 2: -4, 3: -4, 4: 4, 5: -4 }); // −10/3 → −4
   assert.ok(s.eliminated.includes(innocent) && !s.over);
   t = E.runTrial(s, s.perp, [0, 1, 2], { 3: true, 4: false, 5: false });
-  assert.deepStrictEqual(t.points, { 0: 4, 1: 4, 2: 4, 3: 6, 4: -4, 5: -4 }); // 10/3 → 4; no bonus for Guilty votes
+  assert.deepStrictEqual(t.points, { 0: 4, 1: 4, 2: 4, 3: 6, 4: -4, 5: -4 }); // 12/3 = 4; no bonus for Guilty votes
   assert.ok(s.over);
 });
 

@@ -33,6 +33,8 @@
   td.n { text-align: right; white-space: nowrap; font-weight: 600; }
   @media (max-width: 560px) { td.n { white-space: normal; } th, td { padding: 7px 4px; } .weights { grid-template-columns: repeat(5, 1fr); } }
   .callout { border-left: 4px solid var(--amber); }
+  .table-wrap { overflow-x: auto; }
+  #ramp ~ .table-wrap td, #ramp ~ .table-wrap th { padding: 7px 5px; }
   .callout.cyan { border-left-color: var(--cyan); }
   .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
   .cardx { border: 2px solid var(--amber); border-radius: 12px; padding: 14px; background: linear-gradient(160deg, #2b1d52, #170f30); }
@@ -123,6 +125,7 @@
         <ol class="steps">
           <li>Choose a Lead Detective (suggestion: whoever most recently played a role in a trial). Enter detectives into the app in seating order, clockwise, starting with the Lead Detective. Set any seat to an <a href="#ai">AI detective</a>.</li>
           <li>Choose how destinations are picked: <b>on the phone</b> (nothing else needed) or <b>with dice</b> (one die per player, faster at a big table).</li>
+          <li>Optionally, change the <a href="#ramp">witness reliability</a>. The standard game is the default.</li>
           <li>Optional extras from the <a href="print/index.html">printables</a>: the suspect lineup poster for the middle of the table, a paper data sheet per player if you like pencil notes, and the location cards.</li>
           <li>Read the briefing aloud and start round 1.</li>
         </ol>
@@ -141,6 +144,11 @@
           <li><b>Locations resolve</b> in order, 1 through 6. The app walks the table through each one.</li>
         </ol>
         <p class="muted">Whenever an order isn't otherwise specified, the Lead Detective goes first.</p>
+        <h3>Skipping the legwork</h3>
+        <ul>
+          <li><b>Investigate for me.</b> On your secret destination screen, let the app pick for you. It sends you to the evidence location your own notes say has the most to teach you.</li>
+          <li><b>Fast-forward the round.</b> At the start of any turn, the table can agree to skip ahead to the end of the round. Every detective spends each remaining turn gathering evidence: the app sends each one, in order from the Lead Detective, to the most useful evidence location not already taken. There's no trading, no action cards, no press releases and no trials until the round ends, and end-of-round hunches happen as usual. It's handy in the early rounds, when witnesses are unreliable and there's little else worth doing.</li>
+        </ul>
       </section>
 
       <section id="locations">
@@ -163,6 +171,7 @@
       <section id="round">
         <h2><span class="num">07</span>End of a round</h2>
         <p>When the last turn of a round ends, the Lead Detective role passes one seat to the left, and witnesses become more reliable.</p>
+        <p><b>The case goes cold</b> if the killer hasn't been convicted by the end of round 10: the nation stops caring, the killer is revealed, and the game is scored as it stands. In the standard game every report is true from round 9, so this rarely happens. With some <a href="#ramp">witness reliability</a> settings it can.</p>
         <h3>Hunches</h3>
         <p>After rounds 2, 3, 4, 5 and 6, each detective secretly either writes a hunch (the suspect he or she thinks did it) or passes. Say out loud <i>whether</i> you wrote one, but never <i>who</i>.</p>
         <table>
@@ -179,7 +188,7 @@
           <tbody>
             <tr><td>Hunch</td><td class="n">16 / 8 / 4 / 2 / 1</td><td class="n">0</td><td>Plus carried points. See <a href="#round">End of a round</a>.</td></tr>
             <tr><td>Press release</td><td class="n">+10</td><td class="n">−5</td><td>Each detective may release each attribute once. Joint releases score the same for each detective.</td></tr>
-            <tr><td>Prosecution</td><td class="n">+10</td><td class="n">−8</td><td>Joint prosecutors split the points evenly, rounding away from zero.</td></tr>
+            <tr><td>Prosecution</td><td class="n">+12</td><td class="n">−10</td><td>Joint prosecutors split the points evenly, rounding away from zero.</td></tr>
             <tr><td>Vote Guilty</td><td class="n">+6</td><td class="n">−4</td><td>“Right” means the defendant really did it.</td></tr>
             <tr><td>Vote Not guilty</td><td class="n">+4</td><td class="n">−4</td><td>“Right” means the defendant is innocent.</td></tr>
             <tr><td>Compliment the Chief</td><td class="n">+2</td><td class="n">—</td><td>Scored if still in hand at the end.</td></tr>
@@ -187,7 +196,7 @@
         </table>
         <p style="margin-top:12px">Ties go to the detective with the most evidence gathered, first- and second-hand.</p>
         <div class="panel callout cyan">
-          <b>When is it worth it?</b> The payoffs tell you how sure you need to be. A press release pays off when you're more than <b>33%</b> sure, and both a prosecution and a Guilty vote above <b>44%</b>. Solving the case matters, but it isn't everything: steady, accurate press releases and well-judged votes can outscore the detective who makes the arrest.
+          <b>When is it worth it?</b> The payoffs tell you how sure you need to be. A press release pays off when you're more than <b>33%</b> sure, a prosecution above about <b>45%</b>, and a Guilty vote above <b>44%</b>. Solving the case matters, but it isn't everything: steady, accurate press releases and well-judged votes can outscore the detective who makes the arrest.
         </div>
       </section>
 
@@ -218,6 +227,10 @@
         <p style="margin-top:14px">Why it works: how much a matching report should shift your odds grows with the round, and in log-odds terms it grows almost exactly linearly. The true weight of a report, relative to a round-1 report:</p>
         <div class="weights" id="weights"></div>
         <p class="muted small" style="margin-top:8px">Record second-hand information in the round it was <i>gathered</i>, not the round you heard it.</p>
+        <h3 id="ramp">Variant: witness reliability</h3>
+        <p>In setup you can change how reliable witnesses are: the chance of a true report in round 1, and how much it changes each round. It can climb faster, climb slower, stay flat, or even fall as memories fade. Reliability never drops below 15% (a blind guess is 14%) or rises above 100%.</p>
+        <div class="weights" id="presets"></div>
+        <p>The weighing rule still works: <b>each mark is worth 10 × its round's reliability, minus 1</b>. In the standard game that's just the round number. With any other setting, the app's notebook shows each round's weight, so use those on a paper data sheet in place of the printed ×1 to ×9.</p>
       </section>
 
       <section id="probability">
@@ -304,6 +317,16 @@
   var w = "";
   for (var r = 1; r <= 9; r++) w += "<div>R" + r + "<b>" + (r === 9 ? "∞" : (llr(r) / llr(1)).toFixed(1)) + "</b></div>";
   $("weights").innerHTML = w;
+
+  // Reliability presets, round by round
+  $("presets").outerHTML = '<div class="table-wrap"><table><thead><tr><th>Preset</th>' + [1, 2, 3, 4, 5, 6, 7, 8, 9].map(function (r) { return '<th class="n">R' + r + "</th>"; }).join("") +
+    "</tr></thead><tbody>" + D.RAMP_PRESETS.map(function (p) {
+      var st = { options: { ramp: p } };
+      return '<tr><td title="' + p.blurb + '"><b>' + p.name + "</b></td>" + [1, 2, 3, 4, 5, 6, 7, 8, 9].map(function (r) {
+        return '<td class="n">' + Math.round(E.reliability(st, r) * 100) + "%</td>";
+      }).join("") + "</tr>";
+    }).join("") + "</tbody></table></div>" +
+    '<ul class="muted">' + D.RAMP_PRESETS.map(function (p) { return "<li><b>" + p.name + ":</b> " + p.blurb + "</li>"; }).join("") + "</ul>";
 
   // ---------- charts: one series each, thin rounded bars, hover tooltips ----------
   var tip = $("tip");

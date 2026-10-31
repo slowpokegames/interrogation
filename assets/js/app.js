@@ -120,7 +120,7 @@
       '<div class="ev-icon">' + big + "</div>" +
       '<div class="ev-value">' + label + "</div>" +
       '<p class="muted small">Recorded in your notebook. Reliability this round: ' +
-      (cat === E.TIME_CAT ? "the lab is always a little off" : Math.round(E.correctChance(S.round) * 100) + "%") + ".</p></div>";
+      (cat === E.TIME_CAT ? "the lab is always a little off" : Math.round(E.reliability(S, S.round) * 100) + "%") + ".</p></div>";
   }
 
   var QUOTES = {
@@ -187,6 +187,25 @@
   }
   function pct(p) { return Math.round(p * 100) + "%"; }
 
+  // Witness reliability for each round 1-9 with its data-sheet weight. upto: dim rounds after it.
+  function rampStrip(ramp, upto) {
+    var st = { options: { ramp: ramp } }, cells = "";
+    for (var r = 1; r <= 9; r++) {
+      var p = E.reliability(st, r);
+      cells += '<div class="ramp-cell' + (upto && r > upto ? " later" : "") + '"><span>R' + r + '</span><div class="ramp-bar"><i style="height:' + Math.round(p * 100) + '%"></i></div>' +
+        "<b>" + Math.round(p * 100) + '%</b><small>×' + E.roundWeight(st, r) + "</small></div>";
+    }
+    return '<div class="ramp">' + cells + "</div>";
+  }
+  function rampSummary(ramp) {
+    var st = { options: { ramp: ramp } }, a = E.reliability(st, 1), d = E.reliability(st, 4);
+    var head = ramp.step > 0 ? "Witnesses get more reliable each round." : ramp.step < 0 ? "Witnesses forget as the case drags on." : "Witnesses never get any better.";
+    var tail = ramp.step > 0 ? "Move too early and you'll be wrong. Wait too long and someone else takes the credit."
+      : ramp.step < 0 ? "The best leads come early. Gather fast, and don't trust late reports much."
+      : "Every report counts the same, so it all comes down to legwork.";
+    return "<b>" + head + "</b> In round 1 they are right " + pct(a) + " of the time; by round 4, " + pct(d) + ". " + tail;
+  }
+
   // The AI detectives at the table, introduced in the briefing.
   function aiRoster() {
     var bots = S.players.map(function (p, pi) { return pi; }).filter(isAI);
@@ -213,8 +232,7 @@
         '<p class="type">Eyewitnesses disagree. The crime lab can only guess the hour of death. Forty-nine people had access to the lot, and the gate log shows when each one signed out. ' +
         "The killer signed out like everyone else, then slipped back in hours later. " +
         "Find the killer before the nation stops caring, and the detective who contributes most gets the promotion.</p>" +
-        '<div class="panel tip"><b>Witnesses get more reliable each round.</b> In round 1 they are right 20% of the time; by round 4, half the time. ' +
-        "Move too early and you'll be wrong. Wait too long and someone else takes the credit.</div>" +
+        '<div class="panel tip">' + rampSummary(S.options.ramp) + rampStrip(S.options.ramp) + "</div>" +
         aiRoster() +
         '<p class="muted">Lead Detective: <b>' + name(S.lead) + "</b></p>" +
         btn("go", "Start round 1", "primary block") + "</section>";
@@ -240,9 +258,11 @@
         "<h2>Anyone for donuts?</h2>" +
         '<p class="muted">Starting with the Lead Detective and going around the table, say out loud whether you are heading to the <b>Donut Shop</b> to trade notes. Once you say it, you are committed for this turn.</p>' +
         '<div class="grid">' + rows + "</div>" +
-        btn("go", !humansIn(fromLead()).length ? "Reveal destinations" : S.options.pickMode === "dice" ? "Everyone else: roll for it" : "Everyone else: choose in secret", "primary block") + "</section>";
+        btn("go", !humansIn(fromLead()).length ? "Reveal destinations" : S.options.pickMode === "dice" ? "Everyone else: roll for it" : "Everyone else: choose in secret", "primary block") +
+        btn("ffask", "Fast-forward the rest of round " + S.round, "ghost block") + "</section>";
     },
     act: {
+      ffask: function () { S.flow.tasks[0] = { t: "fastforward", entered: true }; },
       toggle: function (t, arg) {
         var pi = Number(arg), i = S.flow.donutCalls.indexOf(pi);
         if (isAI(pi)) return;
@@ -279,9 +299,14 @@
     who: function (t) { return [t.pi]; },
     render: function (t) {
       return '<section class="screen">' + turnHeader() + "<h2>Where to, " + name(t.pi) + "?</h2>" +
-        '<p class="muted">Your choice stays secret until everyone has picked.</p>' + locationChoices("pick", [5]) + "</section>";
+        '<p class="muted">Your choice stays secret until everyone has picked.</p>' + locationChoices("pick", [5]) +
+        btn("auto", "Investigate for me", "ghost block") +
+        '<p class="muted small center">Sends you to the evidence location your notes say has the most to teach you.</p></section>';
     },
-    act: { pick: function (t, arg) { S.flow.dest[t.pi] = Number(arg); done(); } }
+    act: {
+      pick: function (t, arg) { S.flow.dest[t.pi] = Number(arg); done(); },
+      auto: function (t) { S.flow.dest[t.pi] = AI.scout(S, t.pi); done(); }
+    }
   };
 
   H.dice = {
@@ -685,7 +710,7 @@
         return '<section class="screen"><h2>Prosecutor\'s Office</h2><p class="muted">Choose one, in secret:</p><div class="grid two">' +
           '<button class="choice" data-act="kind" data-arg="press"' + (open.length ? "" : " disabled") + ">" + A.locationIcon(6) +
           "<b>Press Release</b><small>" + (open.length ? "Announce one attribute of the killer. +10 if right, −5 if wrong. Anyone may release the same attribute; you get one per attribute." : "You've made all three of your press releases.") + "</small></button>" +
-          '<button class="choice" data-act="kind" data-arg="name">' + A.locationIcon(4) + "<b>Name the Perpetrator</b><small>Take a suspect to trial. +10 if guilty, −8 if innocent.</small></button></div>" + "</section>";
+          '<button class="choice" data-act="kind" data-arg="name">' + A.locationIcon(4) + "<b>Name the Perpetrator</b><small>Take a suspect to trial. +12 if guilty, −10 if innocent.</small></button></div>" + "</section>";
       }
       if (t.kind === "press") {
         var cats = open.map(function (c) {
@@ -872,18 +897,80 @@
 
   // ---------- rounds ----------
 
+  // Screens for the end of a round: hunches (after rounds 2-6), then the new-round banner,
+  // or, after the last round, the case goes cold.
+  function endOfRound(ended) {
+    var list = [];
+    if (E.hunchRounds().indexOf(ended) >= 0) {
+      fromLead().forEach(function (pi) { list.push({ t: "hunch", pi: pi, round: ended }); });
+      list.push({ t: "hunchlog", round: ended });
+    }
+    if (ended >= D.CASE_ROUNDS) {
+      list.push({ t: "gameover", cold: true });
+      log("The case went cold after round " + ended + ". The nation stopped caring.");
+    } else list.push({ t: "newround" });
+    return list;
+  }
+
   H.endturn = {
     enter: function () {
       var ended = E.endTurn(S);
       newTurnFlow();
-      if (!ended) return;
-      var list = [];
-      if (E.hunchRounds().indexOf(ended) >= 0) {
-        fromLead().forEach(function (pi) { list.push({ t: "hunch", pi: pi, round: ended }); });
-        list.push({ t: "hunchlog", round: ended });
+      if (ended) S.flow.tasks = endOfRound(ended).concat(S.flow.tasks);
+    }
+  };
+
+  // Fast-forward: every detective gathers evidence automatically for the rest of the round.
+  // Each turn, detectives (in order from the Lead) pick the evidence location with the most to
+  // teach them, avoiding places already taken. No trading, cards or trials.
+  function fastForward() {
+    var round = S.round, turns = [], ended = 0;
+    while (!ended) {
+      var dest = {}, taken = [];
+      fromLead().forEach(function (pi) { dest[pi] = AI.scout(S, pi, taken); taken.push(dest[pi]); });
+      [1, 2, 3, 4].forEach(function (n) {
+        var here = Object.keys(dest).map(Number).filter(function (pi) { return dest[pi] === n; });
+        if (!here.length) return;
+        var cat = n <= 3 ? n - 1 : E.TIME_CAT, value = draw(n, cat), ev = E.newEv(S);
+        here.forEach(function (pi) { E.record(S, pi, { cat: cat, value: value, ev: ev }); });
+      });
+      turns.push({ turn: S.turn, dest: dest });
+      log("Fast-forward, turn " + S.turn + ": " + [1, 2, 3, 4].map(function (n) {
+        var here = Object.keys(dest).filter(function (pi) { return dest[pi] === n; });
+        return here.length ? loc(n).name + ": " + here.map(function (pi) { return S.players[pi].name; }).join(", ") : null;
+      }).filter(Boolean).join(" · "));
+      ended = E.endTurn(S);
+    }
+    newTurnFlow();
+    S.flow.tasks = [{ t: "fastforward", entered: true, done: true, round: round, turns: turns }].concat(endOfRound(ended), S.flow.tasks);
+  }
+
+  H.fastforward = {
+    render: function (t) {
+      if (!t.done) {
+        var left = E.turnsPerRound(S) - S.turn + 1;
+        return '<section class="screen">' + turnHeader() + "<h2>Fast-forward round " + S.round + "?</h2>" +
+          "<p>Every detective spends the remaining <b>" + left + " turn" + (left > 1 ? "s" : "") + "</b> of this round gathering evidence. " +
+          "Each one goes wherever his or her own notes say there's the most to learn, and detectives spread out so nobody wastes a visit.</p>" +
+          '<p class="muted">No trading, action cards, press releases or trials until the round is over. Hunches at the end of the round happen as usual. ' +
+          "Good for the early rounds, when witnesses are unreliable and there's little else worth doing.</p>" +
+          btn("ff", "Fast-forward", "primary block") + btn("back", "Back", "ghost block") + "</section>";
       }
-      list.push({ t: "newround" });
-      S.flow.tasks = list.concat(S.flow.tasks);
+      var rows = t.turns.map(function (tu) {
+        return "<tr><td>Turn " + tu.turn + "</td>" + S.players.map(function (p, pi) {
+          return '<td class="ff-cell" title="' + esc(loc(tu.dest[pi]).name) + '">' + A.locationIcon(tu.dest[pi]) + "</td>";
+        }).join("") + "</tr>";
+      }).join("");
+      return '<section class="screen"><div class="kicker">Round ' + t.round + " · fast-forwarded</div><h2>Legwork done</h2>" +
+        '<div class="panel table-wrap"><table class="scores ff"><thead><tr><th></th>' + S.players.map(function (p, pi) { return "<th>" + name(pi) + "</th>"; }).join("") +
+        "</tr></thead><tbody>" + rows + "</tbody></table></div>" +
+        '<p class="muted">Everything each detective learned is in his or her notebook.' + (spectator() ? "" : " Check yours before the end-of-round hunches.") + "</p>" +
+        btn("go", "Continue", "primary block") + "</section>";
+    },
+    act: {
+      ff: function () { fastForward(); },
+      back: function () { S.flow.tasks[0] = { t: "donut", entered: true }; },
+      go: function () { done(); }
     }
   };
 
@@ -926,12 +1013,14 @@
 
   H.newround = {
     render: function () {
-      var pct = Math.round(E.correctChance(S.round) * 100);
+      var pct = Math.round(E.reliability(S, S.round) * 100);
       return '<section class="screen center round-banner"><div class="kicker">The investigation continues</div>' +
         '<h2 class="neon big-title flicker">Round ' + S.round + "</h2>" +
         '<div class="meter"><div class="meter-fill" style="width:' + pct + '%"></div></div>' +
         "<p>Witnesses are now right <b>" + pct + "%</b> of the time.</p>" +
-        "<p>New Lead Detective: <b>" + name(S.lead) + "</b></p>" + btn("go", "Start round " + S.round, "primary block") + "</section>";
+        "<p>New Lead Detective: <b>" + name(S.lead) + "</b></p>" +
+        (S.round === D.CASE_ROUNDS ? '<p class="panel tip"><b>Last round.</b> If nobody convicts the killer this round, the case goes cold.</p>' : "") +
+        btn("go", "Start round " + S.round, "primary block") + "</section>";
     },
     act: { go: function () { done(); } }
   };
@@ -988,10 +1077,12 @@
       '<select data-field="round">' + Array.apply(null, Array(S.round)).map(function (x, k) {
         return '<option value="' + (k + 1) + '"' + (k + 1 === S.round ? " selected" : "") + ">Gathered in round " + (k + 1) + "</option>";
       }).join("") + "</select>" + btn("add", "Add", "") + "</div>" +
-      '<p class="muted small">Use the round the information was <i>gathered</i> in. Later rounds are more reliable and count for more.</p></div>';
+      '<p class="muted small">Use the round the information was <i>gathered</i> in. The more reliable a round\'s witnesses, the more its reports count.</p></div>';
 
     var recent = nb.slice(-8).reverse().map(entryLine).join("");
-    return '<div class="kicker">Each mark counts its round number. Highest totals are most likely.</div>' + cats + times + assist + add +
+    var weights = E.isStandardRamp(S) ? '<div class="kicker">Each mark counts its round number. Highest totals are most likely.</div>'
+      : '<div class="kicker">Each mark counts its round\'s weight. Highest totals are most likely.</div>' + rampStrip(S.options.ramp, S.round);
+    return weights + cats + times + assist + add +
       (recent ? '<h3>Latest entries</h3><div class="grid">' + recent + "</div>" : "");
   }
 
@@ -1017,7 +1108,7 @@
   // ---------- game over ----------
 
   H.gameover = {
-    enter: function () { S.over = true; },
+    enter: function (t) { S.over = true; if (t.cold) S.cold = true; },
     render: function () {
       var f = E.finalScores(S), win = f.ranked[0];
       var rows = f.ranked.map(function (r, k) {
@@ -1028,9 +1119,11 @@
         return "<tr" + (k === 0 ? ' class="winner"' : "") + "><td><b>" + esc(r.name) + "</b>" + (hunches ? '<div class="muted small">' + hunches + "</div>" : "") + "</td>" +
           "<td>" + r.hunch + "</td><td>" + r.press + "</td><td>" + r.prosecution + "</td><td>" + r.votes + "</td><td>" + r.compliment + "</td><td><b>" + r.total + "</b></td></tr>";
       }).join("");
-      return '<section class="screen gameover"><div class="kicker">Case closed</div>' +
+      var caught = S.trials.some(function (tr) { return tr.guilty; });
+      return '<section class="screen gameover"><div class="kicker">' + (caught ? "Case closed" : S.cold ? "The case went cold. The nation stopped caring." : "Case abandoned") + "</div>" +
         '<h2 class="neon big-title">' + esc(win.name) + " gets the promotion</h2>" +
-        '<div class="verdict-wrap">' + suspectHero(S.perp, "The killer") + '<div class="verdict-stamp guilty">Guilty</div></div>' +
+        '<div class="verdict-wrap">' + suspectHero(S.perp, caught ? "The killer" : "The killer, still at large") +
+        '<div class="verdict-stamp ' + (caught ? "guilty" : "innocent") + '">' + (caught ? "Guilty" : "At large") + "</div></div>" +
         '<div class="grid two"><div class="panel center"><div class="kicker">Hour of the crime</div><div class="clock-lg">' + A.clock(S.crimeTime) + "</div><b>" + esc(timeName(S.crimeTime)) + "</b></div>" +
         '<div class="panel center"><div class="kicker">The killer signed out at</div><div class="clock-lg">' + A.clock(S.alibis[S.perp]) + "</div><b>" + esc(timeName(S.alibis[S.perp])) + "</b></div></div>" +
         '<div class="panel table-wrap"><table class="scores"><thead><tr><th>Detective</th><th>Hunch</th><th>Press</th><th>Trial</th><th>Votes</th><th>Chief</th><th>Total</th></tr></thead><tbody>' +
@@ -1042,7 +1135,31 @@
 
   // ---------- setup ----------
 
-  var setup = { count: 4, names: ["", "", "", "", "", ""], kinds: ["", "", "", "", "", ""], pickMode: "phone", assist: false };
+  var setup = { count: 4, names: ["", "", "", "", "", ""], kinds: ["", "", "", "", "", ""], pickMode: "phone", assist: false,
+                ramp: { start: D.RAMP.start, step: D.RAMP.step } };
+
+  function rampPanel() {
+    var r = setup.ramp;
+    var presets = D.RAMP_PRESETS.map(function (p) {
+      var on = p.start === r.start && p.step === r.step;
+      return '<button class="chip-btn' + (on ? " selected" : "") + '" data-act="ramp" data-arg="' + p.key + '" title="' + esc(p.blurb) + '">' + esc(p.name) + "</button>";
+    }).join("");
+    var match = D.RAMP_PRESETS.filter(function (p) { return p.start === r.start && p.step === r.step; })[0];
+    var starts = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9].map(function (v) {
+      return '<option value="' + v + '"' + (v === r.start ? " selected" : "") + ">" + pct(v) + "</option>";
+    }).join("");
+    var steps = [0.2, 0.15, 0.1, 0.05, 0, -0.05, -0.1, -0.15].map(function (v) {
+      var label = v > 0 ? "+" + pct(v) + " a round" : v < 0 ? "−" + pct(-v) + " a round" : "No change";
+      return '<option value="' + v + '"' + (v === r.step ? " selected" : "") + ">" + label + "</option>";
+    }).join("");
+    return '<div class="panel"><h3>Witness reliability</h3>' +
+      '<p class="muted small">How often an interrogation is right, round by round. The standard game starts at 20% and climbs 10% a round.</p>' +
+      '<div class="row chips">' + presets + "</div>" +
+      '<div class="grid two ramp-pick"><label><span class="muted small">Round 1</span><select data-ramp="start">' + starts + "</select></label>" +
+      '<label><span class="muted small">Then</span><select data-ramp="step">' + steps + "</select></label></div>" +
+      rampStrip(r) + (match ? '<p class="muted small">' + esc(match.blurb) + "</p>" : "") +
+      '<p class="muted small">Never below 15% (a blind guess is 14%) or above 100%. The ×weights are what each round\'s marks count for in the notebook.</p></div>';
+  }
 
   // Seats in use, with AI names filled in. A personality can sit at the table twice, under two names.
   function seats() {
@@ -1094,6 +1211,7 @@
       "</div></div>" +
       '<div class="panel"><label class="row check"><input type="checkbox" data-act="assist"' + (setup.assist ? " checked" : "") + ">" +
       "<span><b>Detective assist</b><br><span class=\"muted small\">Notebooks rank the top suspects for you. Easier, but less of the fun is yours.</span></span></label></div>" : "") +
+      rampPanel() +
       btn("start", people ? "Open the case" : "Watch the case", "primary block") +
       '<p class="center small"><a href="rules.html">Read the rules</a> · <a href="print/index.html">Printables</a></p></section>';
   }
@@ -1102,9 +1220,13 @@
     count: function (arg) { setup.count = Number(arg); },
     mode: function (arg) { setup.pickMode = arg; },
     assist: function () { setup.assist = !setup.assist; },
+    ramp: function (arg) {
+      var p = D.RAMP_PRESETS.filter(function (x) { return x.key === arg; })[0];
+      if (p) setup.ramp = { start: p.start, step: p.step };
+    },
     start: function () {
       var list = seats();
-      S = E.newGame(list, { pickMode: setup.pickMode, assist: setup.assist }, newSeed());
+      S = E.newGame(list, { pickMode: setup.pickMode, assist: setup.assist, ramp: { start: setup.ramp.start, step: setup.ramp.step } }, newSeed());
       newTurnFlow();
       S.flow.tasks.unshift({ t: "briefing" });
       log("Case opened. " + list.length + " detectives on the case. Lead Detective: " + list[0].name + ".");
@@ -1199,7 +1321,7 @@
   function handle(el) {
     var act = el.getAttribute("data-act"), arg = el.getAttribute("data-arg");
     if (el.disabled || el.classList.contains("disabled")) return;
-    var scrollTop = act === "pickh" || act === "accuse" || act === "attr" || act === "claim" || act === "set" || act === "toggle" || act === "count" || act === "mode";
+    var scrollTop = act === "pickh" || act === "accuse" || act === "attr" || act === "claim" || act === "set" || act === "toggle" || act === "count" || act === "mode" || act === "ramp";
     if (!S) {
       if (setupAct[act]) setupAct[act](arg);
     } else if (globalAct[act]) {
@@ -1225,6 +1347,7 @@
     if (el.matches('input[type="checkbox"][data-act]')) handle(el);
     if (S && el.matches('select[data-field="cat"]')) { cur().addCat = Number(el.value); save(); render(); }
     if (!S && el.matches("select[data-seat]")) { setup.kinds[Number(el.getAttribute("data-seat"))] = el.value; render(); }
+    if (!S && el.matches("select[data-ramp]")) { setup.ramp[el.getAttribute("data-ramp")] = Number(el.value); var y = window.scrollY; render(); window.scrollTo(0, y); }
   });
   document.addEventListener("input", function (ev) {
     var k = ev.target.getAttribute("data-name");

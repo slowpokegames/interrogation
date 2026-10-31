@@ -94,12 +94,27 @@
   var ACTION_DECK = { peek: 3, compliment: 1, strongarm: 3, sirens: 2, lunch: 2 };
   var DONUT_DECK = { donuts: 4 };
 
+  // Witness reliability: the chance an interrogation is right in round 1, and how much it changes
+  // each round after. The standard game starts at 20% and climbs 10% a round. Reliability never
+  // goes above 100% or below 15% (just better than a blind guess, 1 in 7).
+  var RAMP = { start: 0.2, step: 0.1, floor: 0.15 };
+  var RAMP_PRESETS = [
+    { key: "standard", name: "Standard", start: 0.2, step: 0.1, blurb: "Barely better than a guess at first, certain by round 9." },
+    { key: "headstart", name: "Head start", start: 0.3, step: 0.1, blurb: "Useful from the first turn. A quicker case." },
+    { key: "slowburn", name: "Slow burn", start: 0.2, step: 0.05, blurb: "Climbs half as fast. A long, careful case." },
+    { key: "fading", name: "Fading memories", start: 0.5, step: -0.05, blurb: "Witnesses are at their best on day one and forget as the case drags on. Act early." },
+    { key: "steady", name: "Steady", start: 0.5, step: 0, blurb: "Every report is right half the time, all game." }
+  ];
+
+  // If the killer hasn't been convicted by the end of this round, the case goes cold.
+  var CASE_ROUNDS = 10;
+
   var TURNS_PER_ROUND = { 3: 6, 4: 4, 5: 3, 6: 3 };
 
   var SCORING = {
     hunchBase: { 2: 16, 3: 8, 4: 4, 5: 2, 6: 1 },   // hunch made after round N
     pressRelease: { right: 10, wrong: -5 },
-    prosecution: { guilty: 10, innocent: -8 },
+    prosecution: { guilty: 12, innocent: -10 },
     vote: { guiltyIfGuilty: 6, guiltyIfInnocent: -4, notGuiltyIfGuilty: -4, notGuiltyIfInnocent: 4 },
     compliment: 2
   };
@@ -112,6 +127,6 @@
   return {
     CATEGORIES: CATEGORIES, HOURS: HOURS, TIMES: TIMES, TIME_SHORT: TIME_SHORT, SUSPECTS: SUSPECTS,
     LOCATIONS: LOCATIONS, CARDS: CARDS, ACTION_DECK: ACTION_DECK, DONUT_DECK: DONUT_DECK,
-    TURNS_PER_ROUND: TURNS_PER_ROUND, SCORING: SCORING, suspectLabel: suspectLabel
+    RAMP: RAMP, RAMP_PRESETS: RAMP_PRESETS, CASE_ROUNDS: CASE_ROUNDS, TURNS_PER_ROUND: TURNS_PER_ROUND, SCORING: SCORING, suspectLabel: suspectLabel
   };
 });

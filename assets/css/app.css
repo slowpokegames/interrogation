@@ -278,3 +278,20 @@ body.private .topbar { border-bottom-color: var(--pink); }
 .voice-row .lineup { grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 8px; }
 .press-line { display: flex; align-items: center; gap: 6px; width: 100%; }
 .press-line .attr-ic svg { width: 26px; height: 26px; }
+.scores.ff td, .scores.ff th { text-align: center; }
+.ff-cell svg { width: 30px; height: 30px; display: inline-block; vertical-align: middle; }
+
+/* ---------- witness reliability ramp ---------- */
+.chip-btn { appearance: none; font: 600 0.9rem var(--head); letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink); background: var(--bg-2); border: 1.5px solid var(--line); border-radius: 999px; padding: 7px 12px; cursor: pointer; }
+.chip-btn.selected { border-color: var(--pink); box-shadow: 0 0 12px rgba(255, 46, 136, 0.4); }
+.row.chips { gap: 6px; }
+.ramp-pick { margin: 10px 0 4px; }
+.ramp-pick label { display: grid; gap: 4px; }
+.ramp-pick select { width: 100%; }
+.ramp { display: grid; grid-template-columns: repeat(9, minmax(0, 1fr)); gap: 4px; margin: 10px 0 6px; text-align: center; }
+.ramp-cell { display: grid; gap: 2px; font: 600 0.75rem var(--head); color: var(--muted); }
+.ramp-cell b { color: var(--ink); font-size: 0.8rem; }
+.ramp-cell small { color: var(--cyan); }
+.ramp-cell.later { opacity: 0.45; }
+.ramp-bar { height: 44px; display: flex; align-items: flex-end; background: var(--bg-2); border-radius: 4px; overflow: hidden; }
+.ramp-bar i { display: block; width: 100%; background: var(--cyan); border-radius: 4px 4px 0 0; }

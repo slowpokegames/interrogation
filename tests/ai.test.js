@@ -70,6 +70,19 @@ test("decisions are legal for every personality", () => {
   }
 });
 
+test("scouting picks the evidence location with the most to learn, and spreads detectives out", () => {
+  const s = aiGame();
+  // Detective 0 is nearly sure of the outfit and studio, and has lab readings, so the voice is what's left to learn.
+  for (let r = 6; r <= 8; r++) { E.record(s, 0, { round: r, cat: 0, value: 2 }); E.record(s, 0, { round: r, cat: 1, value: 3 }); }
+  for (let k = 0; k < 3; k++) E.record(s, 0, { cat: E.TIME_CAT, value: 10 });
+  assert.strictEqual(AI.scout(s, 0), 3);
+  // With the Studio and Rodeo Drive taken, a fresh detective goes somewhere else.
+  assert.ok(![2, 3].includes(AI.scout(s, 1, [2, 3])));
+  // People can scout too (no personality needed).
+  const h = E.newGame(["Ana", "Bo", "Cy"], {}, 3);
+  assert.ok([1, 2, 3, 4].includes(AI.scout(h, 0)));
+});
+
 test("AI trades are truthful and are not repeated", () => {
   const s = aiGame();
   E.record(s, 3, { cat: 0, value: 4, round: 2 }); E.record(s, 3, { cat: 1, value: 1, round: 3 });
