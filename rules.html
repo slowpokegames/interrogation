@@ -89,6 +89,7 @@
       <a href="#scoring">Scoring</a>
       <a href="#cards">Action cards</a>
       <a href="#ai">AI detectives</a>
+      <a href="#field">Field kit</a>
       <a href="#weighing">Weighing evidence</a>
       <a href="#probability">How the odds work</a>
       <a href="#rulings">Rulings</a>
@@ -121,7 +122,7 @@
 
       <section id="setup">
         <h2><span class="num">03</span>Setup</h2>
-        <p><b>You need one phone or tablet</b> running the app (<a href="play.html">play.html</a>), passed around the table. Everything secret happens behind a “pass the phone” screen, so nobody needs a second device. Playing alone against AI detectives? There's nothing to hide, so the phone stays with you.</p>
+        <p><b>You need one phone or tablet</b> running the app (<a href="play.html">play.html</a>), passed around the table. Everything secret happens behind a “pass the phone” screen, so nobody needs a second device. Playing alone against AI detectives? There's nothing to hide, so the phone stays with you. Everyone has a phone? Use the <a href="#field">field kit</a> instead.</p>
         <ol class="steps">
           <li>Choose a Lead Detective (suggestion: whoever most recently played a role in a trial). Enter detectives into the app in seating order, clockwise, starting with the Lead Detective. Set any seat to an <a href="#ai">AI detective</a>.</li>
           <li>Choose how destinations are picked: <b>on the phone</b> (nothing else needed) or <b>with dice</b> (one die per player, faster at a big table).</li>
@@ -220,8 +221,46 @@
         </ul>
       </section>
 
+      <section id="field">
+        <h2><span class="num">11</span>Field kit: a phone for every detective</h2>
+        <p>The field kit (<a href="field.html">field.html</a>) lets every detective play on his or her own phone. The phones never talk to each other and need no internet once the page is loaded. They agree because they share one case number. Everything public is said out loud, as it would be with a board.</p>
+        <h3>Opening the case</h3>
+        <ol class="steps">
+          <li>One detective taps <b>Open a new case</b>, chooses the number of detectives and the witness reliability, and reads the eight-character <b>case number</b> out loud. He or she is Seat 1 and the first Lead Detective.</li>
+          <li>Everyone else taps <b>Join a case</b>, types the case number and picks a seat, counting clockwise from Seat 1. The case number also carries the settings, so every phone plays the same game.</li>
+          <li>Each phone shows a three-digit <b>badge number</b>. Say yours out loud. It stays the same all game. A phone that restarts the case gets a new one.</li>
+        </ol>
+        <h3>A turn on your own phone</h3>
+        <ul>
+          <li><b>Donut Shop calls</b> go around the table from the Lead Detective, out loud, as usual. Everyone else picks a destination in secret and locks it in. When every phone is locked, reveal together by turning your phones around.</li>
+          <li><b>Tell your phone who's there.</b> It asks how many other detectives are at your location, and whether anyone there played <i>Speed with Sirens</i> or <i>A Box of Donuts</i>. Play your own cards on the same screen.</li>
+          <li><b>Witness reports are shared.</b> Every report comes from the case number plus the round, turn and location. Detectives at the same place hear exactly the same thing, as they would around one phone. Asking again never gives a different answer.</li>
+          <li><b>Trading</b> uses <b>tip codes</b>. Tap a report in your notes to show its four-character code (six for a Strong-arm extra) and read it out. The other detective types it in, and his or her phone looks the report up itself. A tip code can't carry a false value, so there is no way to bluff. <i>Steal a Peek</i> works the same way: the target opens <b>☰ → Steal a Peek</b> and reads out two codes.</li>
+          <li><b>Trials:</b> the prosecutor names the suspect and the hour out loud. Everyone else taps <b>Trial called</b>, picks the defendant, sees the alibi and locks in a vote. Then everyone reads the verdict at the same moment.</li>
+          <li>Hunches and press releases happen on your own phone. Read press releases out loud.</li>
+          <li>Everyone moves through the turn together. Don't tap on until the table is ready.</li>
+        </ul>
+        <h3>Keeping everyone honest</h3>
+        <p>Nothing stops a determined cheat with a computer, but the field kit takes away the easy temptations:</p>
+        <ul>
+          <li>Destinations are sealed once locked in. There's no back button, and each turn's report is fixed, so looking twice teaches you nothing.</li>
+          <li>The phone never shows or stores the killer. A saved game keeps only the case number and rebuilds the rest when it loads.</li>
+          <li>Tip codes carry a check tied to the case. A made-up code is rejected (about 1 guess in 7,000 gets through), and so is a code for a turn that hasn't happened yet.</li>
+          <li>A phone that opens the same case file twice shows <b>Reopened</b> at the top for the rest of the game, and its badge number changes.</li>
+          <li>The screen covers itself whenever you put the phone down or switch apps. Tap ◐ to cover it yourself.</li>
+          <li>At the end, each phone shows a four-character <b>case seal</b> built from every trial it took part in. All the seals should match. A different seal means that phone held a trial the table never saw. Each phone also lists where its detective went each turn, to check against what was announced.</li>
+        </ul>
+        <h3>Scoring and differences</h3>
+        <ul>
+          <li>Each phone scores its own detective. At the end, read out your totals. Ties go to the detective with the most evidence, which each phone shows.</li>
+          <li>Each phone draws action cards and Boxes of Donuts from its own deck with the usual mix of cards. The decks never run out.</li>
+          <li>Phones don't track other detectives' press releases. Jot them down if you want to remember them.</li>
+          <li>No AI detectives: every seat is a person with a phone.</li>
+        </ul>
+      </section>
+
       <section id="weighing">
-        <h2><span class="num">11</span>Weighing the evidence</h2>
+        <h2><span class="num">12</span>Weighing the evidence</h2>
         <p>Later evidence is far more reliable, so it should count for more. The rule of thumb on the data sheet and in the app's notebook is almost exactly what a statistician would do:</p>
         <div class="panel callout"><b>Each mark is worth its round number.</b> A report from round 3 counts 3. Total each attribute that way, then add a suspect's three totals together. The highest score is your most likely perpetrator.</div>
         <p style="margin-top:14px">Why it works: how much a matching report should shift your odds grows with the round, and in log-odds terms it grows almost exactly linearly. The true weight of a report, relative to a round-1 report:</p>
@@ -234,7 +273,7 @@
       </section>
 
       <section id="probability">
-        <h2><span class="num">12</span>How the odds work</h2>
+        <h2><span class="num">13</span>How the odds work</h2>
         <h3>Witness reliability by round</h3>
         <p>An interrogation gives the true attribute (round + 1) × 10% of the time. Otherwise it names one of the six wrong values at random. In round 1 a report is only a little better than a blind guess (14%). From round 9 on, every report is true.</p>
         <div class="chart" id="chartReliability" role="img" aria-label="Bar chart: chance a witness is right, by round"></div>
@@ -249,7 +288,7 @@
       </section>
 
       <section id="rulings">
-        <h2><span class="num">13</span>Rulings</h2>
+        <h2><span class="num">14</span>Rulings</h2>
         <table>
           <tbody>
             <tr><th>Trading</th><td>You may offer first- or second-hand information and trade in pairs or as a group. You may not attach conditions (“don't pass this on”) or promise future information. <b>No bluffing:</b> anything you share must be exactly what is in your notes, including the round it was gathered. You can always keep things to yourself.</td></tr>

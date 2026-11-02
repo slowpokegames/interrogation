@@ -8,7 +8,7 @@
 (function () {
   "use strict";
 
-  var D = window.GameData, E = window.Engine, A = window.Art, AI = window.AI;
+  var D = window.GameData, E = window.Engine, A = window.Art, AI = window.AI, V = window.Views;
   var SAVE_KEY = "interrogation.save.v3";
   var S = null;        // the saved game state
   var view = null;     // overlay: null | "lineup" | "log" | "menu" | "notebooks" | "confirm-new" | "confirm-end"
@@ -17,11 +17,7 @@
 
   // ---------- helpers ----------
 
-  function esc(s) {
-    return String(s).replace(/[&<>"']/g, function (c) {
-      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
-    });
-  }
+  var esc = V.esc, pct = V.pct, attrName = V.attrName, timeName = V.timeName, loc = V.loc, btn = V.btn;
   function name(pi) { return esc(S.players[pi].name) + (S.players[pi].ai ? ' <span class="ai-tag">AI</span>' : ""); }
   function isAI(pi) { return !!S.players[pi].ai; }
   function humansIn(list) { return list.filter(function (pi) { return !isAI(pi); }); }
@@ -33,19 +29,12 @@
     var n = list.map(name);
     return n.length < 2 ? n.join("") : n.slice(0, -1).join(", ") + " &amp; " + n[n.length - 1];
   }
-  function attrName(cat, v) { return esc(D.CATEGORIES[cat].values[v]); }
-  function timeName(t) { return D.TIMES[t]; }
-  function loc(n) { return D.LOCATIONS[n - 1]; }
   function fromLead() {
     var out = [];
     for (var k = 0; k < S.players.length; k++) out.push((S.lead + k) % S.players.length);
     return out;
   }
   function log(msg) { S.log.push({ r: S.round, t: S.turn, m: msg }); }
-  function btn(act, label, cls, arg) {
-    return '<button class="btn ' + (cls || "") + '" data-act="' + act + '"' +
-      (arg != null ? ' data-arg="' + esc(arg) + '"' : "") + ">" + label + "</button>";
-  }
 
   function save() {
     try { localStorage.setItem(SAVE_KEY, JSON.stringify(S)); } catch (e) { /* private mode: play on without saving */ }
@@ -111,61 +100,13 @@
 
   // ---------- shared views ----------
 
-  function evidenceCard(n, cat, value, quote) {
-    var big = cat === E.TIME_CAT ? A.clock(value) : A.attributeIcon(cat, value);
-    var label = cat === E.TIME_CAT ? esc(timeName(value)) : attrName(cat, value);
-    return '<div class="evidence pop">' +
-      '<div class="ev-loc">' + A.locationIcon(n) + "<span>" + esc(loc(n).name) + "</span></div>" +
-      '<p class="type ev-quote">' + quote + "</p>" +
-      '<div class="ev-icon">' + big + "</div>" +
-      '<div class="ev-value">' + label + "</div>" +
-      '<p class="muted small">Recorded in your notebook. Reliability this round: ' +
-      (cat === E.TIME_CAT ? "the lab is always a little off" : Math.round(E.reliability(S, S.round) * 100) + "%") + ".</p></div>";
-  }
+  function evidenceCard(n, cat, value, quote) { return V.evidenceCard(S, n, cat, value, quote); }
+  var QUOTES = V.QUOTES;
 
-  var QUOTES = {
-    1: "An extra leans in: “I'm telling you, the one acting funny was in…”",
-    2: "A grip lowers his voice: “The struggle? It came from…”",
-    3: "A starlet waves a cigarette holder: “Darling, the voice was…”",
-    4: "The crime lab hands over a smudged report: “Hour of death, give or take a few…”"
-  };
+  function suspectGrid(opts) { return V.suspectGrid(S, opts); }
 
-  // The lineup, one row per voice.
-  function suspectGrid(opts) {
-    opts = opts || {};
-    var V = D.CATEGORIES[2], html = "", row = -1;
-    D.SUSPECTS.forEach(function (s, i) {
-      if (s[2] !== row) {
-        if (row >= 0) html += "</div></div>";
-        row = s[2];
-        html += '<div class="voice-row" style="--vc:' + V.colors[row] + '"><div class="voice-head"><span class="voice-ic">' + A.voiceIcon(row) + "</span>" + esc(V.values[row]) + '</div><div class="lineup">';
-      }
-      var cleared = S.eliminated.indexOf(i) >= 0;
-      var cls = "suspect-card" + (cleared ? " cleared" : "") + (opts.selected === i ? " selected" : "");
-      var dis = opts.act && cleared && !opts.allowCleared;
-      html += (opts.act && !dis ? '<button class="' + cls + '" data-act="' + opts.act + '" data-arg="' + i + '">' : '<div class="' + cls + '">') +
-        A.portrait(i, { number: true }) +
-        (opts.scores ? '<div class="score-tag">' + opts.scores[i] + "</div>" : "") +
-        (opts.act && !dis ? "</button>" : "</div>");
-    });
-    return html + "</div></div>";
-  }
-
-  function suspectHero(i, caption) {
-    return '<div class="hero-suspect pop"><div class="hero-mug">' + A.portrait(i, { number: true }) + "</div>" +
-      "<div><div class=\"kicker\">" + (caption || "Suspect No." + A.pad(i + 1)) + "</div>" +
-      [0, 1, 2].map(function (c) {
-        return '<div class="attr-line">' + '<span class="attr-ic">' + A.attributeIcon(c, D.SUSPECTS[i][c]) + "</span>" + attrName(c, D.SUSPECTS[i][c]) + "</div>";
-      }).join("") + "</div></div>";
-  }
-
-  function clockPicker(act, selected) {
-    var html = '<div class="clock-pick">';
-    for (var t = 0; t < D.HOURS; t++)
-      html += '<button class="time-btn' + (selected === t ? " selected" : "") + '" data-act="' + act + '" data-arg="' + t + '">' +
-        '<span class="mini-clock">' + A.clock(t) + "</span>" + D.TIME_SHORT[t] + "</button>";
-    return html + "</div>";
-  }
+  var suspectHero = V.suspectHero, clockPicker = V.clockPicker, locationChoices = V.locationChoices, cardFace = V.cardFace;
+  var entryLine = V.entryLine, rampStrip = V.rampStrip, rampSummary = V.rampSummary, uniqueEntries = V.uniqueEntries;
 
   // ---------- private-screen covers ----------
 
@@ -185,26 +126,7 @@
     return '<section class="screen"><div class="kicker">Private decision · open because every detective is an AI</div>' +
       h.spectate(t) + btn("spectnext", "Continue", "primary block") + "</section>";
   }
-  function pct(p) { return Math.round(p * 100) + "%"; }
 
-  // Witness reliability for each round 1-9 with its data-sheet weight. upto: dim rounds after it.
-  function rampStrip(ramp, upto) {
-    var st = { options: { ramp: ramp } }, cells = "";
-    for (var r = 1; r <= 9; r++) {
-      var p = E.reliability(st, r);
-      cells += '<div class="ramp-cell' + (upto && r > upto ? " later" : "") + '"><span>R' + r + '</span><div class="ramp-bar"><i style="height:' + Math.round(p * 100) + '%"></i></div>' +
-        "<b>" + Math.round(p * 100) + '%</b><small>×' + E.roundWeight(st, r) + "</small></div>";
-    }
-    return '<div class="ramp">' + cells + "</div>";
-  }
-  function rampSummary(ramp) {
-    var st = { options: { ramp: ramp } }, a = E.reliability(st, 1), d = E.reliability(st, 4);
-    var head = ramp.step > 0 ? "Witnesses get more reliable each round." : ramp.step < 0 ? "Witnesses forget as the case drags on." : "Witnesses never get any better.";
-    var tail = ramp.step > 0 ? "Move too early and you'll be wrong. Wait too long and someone else takes the credit."
-      : ramp.step < 0 ? "The best leads come early. Gather fast, and don't trust late reports much."
-      : "Every report counts the same, so it all comes down to legwork.";
-    return "<b>" + head + "</b> In round 1 they are right " + pct(a) + " of the time; by round 4, " + pct(d) + ". " + tail;
-  }
 
   // The AI detectives at the table, introduced in the briefing.
   function aiRoster() {
@@ -287,13 +209,6 @@
       }
     }
   };
-
-  function locationChoices(act, exclude, selected) {
-    return '<div class="loc-grid">' + D.LOCATIONS.filter(function (l) { return exclude.indexOf(l.n) < 0; }).map(function (l) {
-      return '<button class="loc-btn' + (selected === l.n ? " selected" : "") + '" data-act="' + act + '" data-arg="' + l.n + '" style="--c:' + A.LOCATION_COLORS[l.n - 1] + '">' +
-        '<span class="die">' + l.n + "</span>" + A.locationIcon(l.n) + "<b>" + esc(l.name) + "</b><small>" + esc(l.blurb) + "</small></button>";
-    }).join("") + "</div>";
-  }
 
   H.pick = {
     who: function (t) { return [t.pi]; },
@@ -390,16 +305,6 @@
       go: function () { done(); }
     }
   };
-
-  function cardFace(c) {
-    var C = D.CARDS[c];
-    return '<div class="card-face card-' + c + '"><div class="card-title">' + esc(C.name) + "</div>" +
-      '<div class="card-art">' + cardArt(c) + "</div><p>" + esc(C.text) + "</p></div>";
-  }
-  function cardArt(c) {
-    var n = { donuts: 5, peek: 1, compliment: 4, strongarm: 3, sirens: 4, lunch: 1 }[c];
-    return A.locationIcon(n);
-  }
 
   H.cardplay = {
     who: function (t) { return [t.pi]; },
@@ -673,17 +578,6 @@
       cancel: function (t) { S.flow.tasks[1].done[t.key] = true; S.flow.tasks.shift(); }
     }
   };
-
-  // Notebook entries with repeats of the same report removed.
-  function uniqueEntries(list) {
-    var seen = {};
-    return list.filter(function (e) {
-      if (e.ev == null) return true;
-      if (seen[e.ev]) return false;
-      seen[e.ev] = true;
-      return true;
-    });
-  }
 
   // ---------- prosecutor's office ----------
 
@@ -1027,33 +921,8 @@
 
   // ---------- notebook (private) ----------
 
-  function entryLine(e) {
-    var ic = e.cat === E.TIME_CAT ? A.clock(e.value) : A.attributeIcon(e.cat, e.value);
-    var label = e.cat === E.TIME_CAT ? esc(timeName(e.value)) : attrName(e.cat, e.value);
-    return '<div class="entry"><span class="attr-ic">' + ic + "</span><span>" + label + "</span>" +
-      '<span class="spacer"></span><span class="chip">R' + e.round + (e.hand === 2 ? " · 2nd" : "") + "</span></div>";
-  }
-
   function notebookView(pi, t) {
-    var w = E.weightedTotals(S, pi), nb = S.notebooks[pi];
-    var cats = [0, 1, 2].map(function (c) {
-      var max = Math.max.apply(null, w.attrs[c]);
-      var cells = D.CATEGORIES[c].values.map(function (v, k) {
-        var first = 0, second = 0;
-        nb.forEach(function (e) { if (e.cat === c && e.value === k) { if (e.hand === 1) first++; else second++; } });
-        var score = w.attrs[c][k];
-        return '<div class="nb-cell' + (score && score === max ? " top" : "") + '"><span class="attr-ic">' + A.attributeIcon(c, k) + "</span>" +
-          '<span class="nb-name">' + esc(D.CATEGORIES[c].short[k]) + "</span>" +
-          '<span class="nb-marks">' + (first ? first + "×" : "") + (second ? " +" + second + "′" : "") + "</span>" +
-          '<span class="nb-score">' + score + "</span></div>";
-      }).join("");
-      return '<div class="nb-cat"><h3>' + esc(D.CATEGORIES[c].name) + '</h3><div class="nb-row">' + cells + "</div></div>";
-    }).join("");
-    var tmax = Math.max.apply(null, w.times);
-    var times = '<div class="nb-cat"><h3>Crime lab</h3><div class="nb-row times">' + w.times.map(function (n, k) {
-      return '<div class="nb-cell' + (n && n === tmax ? " top" : "") + '"><span class="attr-ic">' + A.clock(k) + '</span><span class="nb-name">' + D.TIME_SHORT[k] + '</span><span class="nb-score">' + (n || "") + "</span></div>";
-    }).join("") + "</div></div>";
-
+    var nb = S.notebooks[pi];
     var assist = "";
     if (isAI(pi)) {
       var post = AI.posterior(S, pi), order = post.map(function (p, i) { return i; })
@@ -1061,10 +930,7 @@
       assist = '<div class="panel"><div class="kicker">' + esc(S.players[pi].name) + "'s beliefs: chance each suspect is the killer</div><div class=\"assist\">" +
         order.map(function (i) { return '<div class="assist-item">' + A.portrait(i, { number: true }) + "<b>" + pct(post[i]) + "</b></div>"; }).join("") + "</div></div>";
     } else if (S.options.assist) {
-      var ranked = E.suspectScores(S, pi).filter(function (s) { return !s.eliminated; })
-        .sort(function (a, b) { return b.score - a.score; }).slice(0, 5);
-      assist = '<div class="panel"><div class="kicker">Detective assist: top suspects by weighted score</div><div class="assist">' +
-        ranked.map(function (s) { return '<div class="assist-item">' + A.portrait(s.suspect, { number: true }) + "<b>" + s.score + "</b></div>"; }).join("") + "</div></div>";
+      assist = V.assistPanel(S, pi);
     }
 
     var add = isAI(pi) ? "" : '<div class="panel"><div class="kicker">Record shared (second-hand) info</div>' +
@@ -1080,9 +946,7 @@
       '<p class="muted small">Use the round the information was <i>gathered</i> in. The more reliable a round\'s witnesses, the more its reports count.</p></div>';
 
     var recent = nb.slice(-8).reverse().map(entryLine).join("");
-    var weights = E.isStandardRamp(S) ? '<div class="kicker">Each mark counts its round number. Highest totals are most likely.</div>'
-      : '<div class="kicker">Each mark counts its round\'s weight. Highest totals are most likely.</div>' + rampStrip(S.options.ramp, S.round);
-    return weights + cats + times + assist + add +
+    return V.notebookGrid(S, pi) + assist + add +
       (recent ? '<h3>Latest entries</h3><div class="grid">' + recent + "</div>" : "");
   }
 
@@ -1138,28 +1002,7 @@
   var setup = { count: 4, names: ["", "", "", "", "", ""], kinds: ["", "", "", "", "", ""], pickMode: "phone", assist: false,
                 ramp: { start: D.RAMP.start, step: D.RAMP.step } };
 
-  function rampPanel() {
-    var r = setup.ramp;
-    var presets = D.RAMP_PRESETS.map(function (p) {
-      var on = p.start === r.start && p.step === r.step;
-      return '<button class="chip-btn' + (on ? " selected" : "") + '" data-act="ramp" data-arg="' + p.key + '" title="' + esc(p.blurb) + '">' + esc(p.name) + "</button>";
-    }).join("");
-    var match = D.RAMP_PRESETS.filter(function (p) { return p.start === r.start && p.step === r.step; })[0];
-    var starts = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9].map(function (v) {
-      return '<option value="' + v + '"' + (v === r.start ? " selected" : "") + ">" + pct(v) + "</option>";
-    }).join("");
-    var steps = [0.2, 0.15, 0.1, 0.05, 0, -0.05, -0.1, -0.15].map(function (v) {
-      var label = v > 0 ? "+" + pct(v) + " a round" : v < 0 ? "−" + pct(-v) + " a round" : "No change";
-      return '<option value="' + v + '"' + (v === r.step ? " selected" : "") + ">" + label + "</option>";
-    }).join("");
-    return '<div class="panel"><h3>Witness reliability</h3>' +
-      '<p class="muted small">How often an interrogation is right, round by round. The standard game starts at 20% and climbs 10% a round.</p>' +
-      '<div class="row chips">' + presets + "</div>" +
-      '<div class="grid two ramp-pick"><label><span class="muted small">Round 1</span><select data-ramp="start">' + starts + "</select></label>" +
-      '<label><span class="muted small">Then</span><select data-ramp="step">' + steps + "</select></label></div>" +
-      rampStrip(r) + (match ? '<p class="muted small">' + esc(match.blurb) + "</p>" : "") +
-      '<p class="muted small">Never below 15% (a blind guess is 14%) or above 100%. The ×weights are what each round\'s marks count for in the notebook.</p></div>';
-  }
+  function rampPanel() { return V.rampPanel(setup.ramp); }
 
   // Seats in use, with AI names filled in. A personality can sit at the table twice, under two names.
   function seats() {
@@ -1213,6 +1056,7 @@
       "<span><b>Detective assist</b><br><span class=\"muted small\">Notebooks rank the top suspects for you. Easier, but less of the fun is yours.</span></span></label></div>" : "") +
       rampPanel() +
       btn("start", people ? "Open the case" : "Watch the case", "primary block") +
+      '<p class="center small"><a href="field.html">Everyone has a phone? Use the field kit</a></p>' +
       '<p class="center small"><a href="rules.html">Read the rules</a> · <a href="print/index.html">Printables</a></p></section>';
   }
 

@@ -84,7 +84,8 @@
   })();
   function gapChance(g) { return GAP[modDay(g)]; }
 
-  function turnsPerRound(state) { return D.TURNS_PER_ROUND[state.players.length] || 3; }
+  // In the field kit each phone holds only its own detective, so the table size is an option.
+  function turnsPerRound(state) { return D.TURNS_PER_ROUND[state.options.tableSize || state.players.length] || 3; }
 
   // ---------- evidence ----------
 

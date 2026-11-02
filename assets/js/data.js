@@ -106,6 +106,10 @@
     { key: "steady", name: "Steady", start: 0.5, step: 0, blurb: "Every report is right half the time, all game." }
   ];
 
+  // The choices offered when setting a custom ramp.
+  var RAMP_STARTS = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9];
+  var RAMP_STEPS = [0.2, 0.15, 0.1, 0.05, 0, -0.05, -0.1, -0.15];
+
   // If the killer hasn't been convicted by the end of this round, the case goes cold.
   var CASE_ROUNDS = 10;
 
@@ -127,6 +131,6 @@
   return {
     CATEGORIES: CATEGORIES, HOURS: HOURS, TIMES: TIMES, TIME_SHORT: TIME_SHORT, SUSPECTS: SUSPECTS,
     LOCATIONS: LOCATIONS, CARDS: CARDS, ACTION_DECK: ACTION_DECK, DONUT_DECK: DONUT_DECK,
-    RAMP: RAMP, RAMP_PRESETS: RAMP_PRESETS, CASE_ROUNDS: CASE_ROUNDS, TURNS_PER_ROUND: TURNS_PER_ROUND, SCORING: SCORING, suspectLabel: suspectLabel
+    RAMP: RAMP, RAMP_PRESETS: RAMP_PRESETS, RAMP_STARTS: RAMP_STARTS, RAMP_STEPS: RAMP_STEPS, CASE_ROUNDS: CASE_ROUNDS, TURNS_PER_ROUND: TURNS_PER_ROUND, SCORING: SCORING, suspectLabel: suspectLabel
   };
 });
